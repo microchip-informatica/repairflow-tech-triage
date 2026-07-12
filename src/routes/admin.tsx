@@ -1,0 +1,455 @@
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useMemo, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { toast } from "sonner";
+import {
+  Wrench,
+  Search,
+  Filter,
+  Phone,
+  Cpu,
+  AlertTriangle,
+  Lightbulb,
+  Euro,
+  Loader2,
+  ArrowLeft,
+  Image as ImageIcon,
+} from "lucide-react";
+
+export const Route = createFileRoute("/admin")({
+  component: AdminPage,
+});
+
+type Ticket = {
+  id: string;
+  cliente: string;
+  telefono: string | null;
+  descripcion: string;
+  foto_url: string | null;
+  categoria: string | null;
+  urgencia: string | null;
+  titulo: string | null;
+  causas: unknown;
+  recomendacion: string | null;
+  coste_estimado: string | null;
+  estado: string;
+  notas: string | null;
+  created_at: string;
+};
+
+const urgencyBadge = (u: string | null) => {
+  if (u === "Alta")
+    return "bg-[color:var(--color-urgency-high)] text-[color:var(--color-urgency-high-foreground)] hover:bg-[color:var(--color-urgency-high)]";
+  if (u === "Media")
+    return "bg-[color:var(--color-urgency-med)] text-[color:var(--color-urgency-med-foreground)] hover:bg-[color:var(--color-urgency-med)]";
+  if (u === "Baja")
+    return "bg-[color:var(--color-urgency-low)] text-[color:var(--color-urgency-low-foreground)] hover:bg-[color:var(--color-urgency-low)]";
+  return "bg-muted text-muted-foreground hover:bg-muted";
+};
+
+const estadoBadge = (s: string) => {
+  if (s === "terminado") return "bg-emerald-100 text-emerald-800 border-emerald-200";
+  if (s === "en curso") return "bg-blue-100 text-blue-800 border-blue-200";
+  return "bg-amber-100 text-amber-800 border-amber-200";
+};
+
+function formatDate(iso: string) {
+  return new Date(iso).toLocaleString("es-ES", {
+    day: "2-digit",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+function AdminPage() {
+  const [tickets, setTickets] = useState<Ticket[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selected, setSelected] = useState<Ticket | null>(null);
+
+  const [search, setSearch] = useState("");
+  const [fUrgencia, setFUrgencia] = useState<string>("all");
+  const [fEstado, setFEstado] = useState<string>("all");
+  const [fCategoria, setFCategoria] = useState<string>("all");
+
+  const load = async () => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from("tickets")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (error) {
+      toast.error("Error cargando tickets");
+    } else {
+      setTickets((data ?? []) as Ticket[]);
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    load();
+  }, []);
+
+  const categorias = useMemo(
+    () =>
+      Array.from(new Set(tickets.map((t) => t.categoria).filter(Boolean) as string[])).sort(),
+    [tickets],
+  );
+
+  const filtered = useMemo(() => {
+    return tickets.filter((t) => {
+      if (search && !t.cliente.toLowerCase().includes(search.toLowerCase())) return false;
+      if (fUrgencia !== "all" && t.urgencia !== fUrgencia) return false;
+      if (fEstado !== "all" && t.estado !== fEstado) return false;
+      if (fCategoria !== "all" && t.categoria !== fCategoria) return false;
+      return true;
+    });
+  }, [tickets, search, fUrgencia, fEstado, fCategoria]);
+
+  return (
+    <div className="min-h-screen">
+      <header className="border-b bg-background/70 backdrop-blur sticky top-0 z-10">
+        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+          <Link to="/" className="flex items-center gap-2 font-semibold">
+            <div className="w-9 h-9 rounded-lg bg-primary text-primary-foreground grid place-items-center">
+              <Wrench className="w-5 h-5" />
+            </div>
+            <span className="text-lg tracking-tight">
+              Repair<span className="text-primary">Flow</span>
+              <span className="text-muted-foreground font-normal ml-1.5 text-sm">/ Panel</span>
+            </span>
+          </Link>
+          <Button asChild variant="ghost" size="sm">
+            <Link to="/">
+              <ArrowLeft className="w-4 h-4 mr-1.5" />
+              Nuevo ticket
+            </Link>
+          </Button>
+        </div>
+      </header>
+
+      <main className="max-w-6xl mx-auto px-4 py-6 md:py-8">
+        <div className="flex items-baseline justify-between mb-5">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Tickets</h1>
+            <p className="text-sm text-muted-foreground">
+              {loading ? "Cargando…" : `${filtered.length} de ${tickets.length}`}
+            </p>
+          </div>
+        </div>
+
+        <Card className="mb-5">
+          <CardContent className="pt-5 pb-4 grid gap-3 md:grid-cols-4">
+            <div className="relative md:col-span-2">
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Buscar por cliente…"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+            <Select value={fUrgencia} onValueChange={setFUrgencia}>
+              <SelectTrigger>
+                <Filter className="w-4 h-4 mr-1" />
+                <SelectValue placeholder="Urgencia" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas las urgencias</SelectItem>
+                <SelectItem value="Alta">Alta</SelectItem>
+                <SelectItem value="Media">Media</SelectItem>
+                <SelectItem value="Baja">Baja</SelectItem>
+              </SelectContent>
+            </Select>
+            <div className="grid grid-cols-2 gap-2 md:col-span-1 md:grid-cols-1 md:gap-0">
+              <Select value={fEstado} onValueChange={setFEstado}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Estado" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos los estados</SelectItem>
+                  <SelectItem value="pendiente">Pendiente</SelectItem>
+                  <SelectItem value="en curso">En curso</SelectItem>
+                  <SelectItem value="terminado">Terminado</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <Select value={fCategoria} onValueChange={setFCategoria}>
+              <SelectTrigger className="md:col-span-4 md:!w-64">
+                <SelectValue placeholder="Categoría" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas las categorías</SelectItem>
+                {categorias.map((c) => (
+                  <SelectItem key={c} value={c}>
+                    {c}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </CardContent>
+        </Card>
+
+        {loading ? (
+          <div className="flex justify-center py-16 text-muted-foreground">
+            <Loader2 className="w-6 h-6 animate-spin" />
+          </div>
+        ) : filtered.length === 0 ? (
+          <Card>
+            <CardContent className="py-16 text-center text-muted-foreground">
+              No hay tickets que coincidan.
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid gap-3">
+            {filtered.map((t) => (
+              <button
+                key={t.id}
+                onClick={() => setSelected(t)}
+                className="text-left"
+              >
+                <Card className="hover:border-primary/50 hover:shadow-md transition cursor-pointer">
+                  <CardContent className="py-4">
+                    <div className="flex items-start justify-between gap-3 flex-wrap">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2 flex-wrap mb-1.5">
+                          <Badge className={urgencyBadge(t.urgencia)}>
+                            {t.urgencia ?? "—"}
+                          </Badge>
+                          {t.categoria && (
+                            <Badge variant="secondary" className="gap-1">
+                              <Cpu className="w-3 h-3" />
+                              {t.categoria}
+                            </Badge>
+                          )}
+                          <Badge variant="outline" className={estadoBadge(t.estado)}>
+                            {t.estado}
+                          </Badge>
+                        </div>
+                        <div className="font-semibold text-base leading-snug">
+                          {t.titulo ?? t.descripcion.slice(0, 60)}
+                        </div>
+                        <div className="text-sm text-muted-foreground mt-0.5 truncate">
+                          {t.cliente}
+                          {t.telefono && ` · ${t.telefono}`}
+                        </div>
+                      </div>
+                      <div className="text-xs text-muted-foreground whitespace-nowrap">
+                        {formatDate(t.created_at)}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </button>
+            ))}
+          </div>
+        )}
+      </main>
+
+      <TicketDetail
+        ticket={selected}
+        onClose={() => setSelected(null)}
+        onUpdated={(t) => {
+          setTickets((prev) => prev.map((p) => (p.id === t.id ? t : p)));
+          setSelected(t);
+        }}
+      />
+    </div>
+  );
+}
+
+function TicketDetail({
+  ticket,
+  onClose,
+  onUpdated,
+}: {
+  ticket: Ticket | null;
+  onClose: () => void;
+  onUpdated: (t: Ticket) => void;
+}) {
+  const [notas, setNotas] = useState("");
+  const [estado, setEstado] = useState("pendiente");
+  const [saving, setSaving] = useState(false);
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!ticket) return;
+    setNotas(ticket.notas ?? "");
+    setEstado(ticket.estado);
+    setPhotoUrl(null);
+    if (ticket.foto_url) {
+      supabase.storage
+        .from("ticket-photos")
+        .createSignedUrl(ticket.foto_url, 3600)
+        .then(({ data }) => setPhotoUrl(data?.signedUrl ?? null));
+    }
+  }, [ticket]);
+
+  if (!ticket) return null;
+
+  const causas = Array.isArray(ticket.causas) ? (ticket.causas as string[]) : [];
+
+  const save = async () => {
+    setSaving(true);
+    const { data, error } = await supabase
+      .from("tickets")
+      .update({ estado, notas: notas || null })
+      .eq("id", ticket.id)
+      .select("*")
+      .single();
+    setSaving(false);
+    if (error) {
+      toast.error("No se pudo guardar");
+      return;
+    }
+    toast.success("Ticket actualizado");
+    onUpdated(data as Ticket);
+  };
+
+  return (
+    <Dialog open={!!ticket} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <div className="flex flex-wrap gap-2 mb-2">
+            <Badge className={urgencyBadge(ticket.urgencia)}>
+              Urgencia {ticket.urgencia ?? "—"}
+            </Badge>
+            {ticket.categoria && (
+              <Badge variant="secondary" className="gap-1">
+                <Cpu className="w-3 h-3" />
+                {ticket.categoria}
+              </Badge>
+            )}
+          </div>
+          <DialogTitle className="text-xl leading-snug">
+            {ticket.titulo ?? "Ticket"}
+          </DialogTitle>
+          <DialogDescription>
+            {ticket.cliente}
+            {ticket.telefono && (
+              <>
+                {" · "}
+                <span className="inline-flex items-center gap-1">
+                  <Phone className="w-3 h-3" />
+                  {ticket.telefono}
+                </span>
+              </>
+            )}
+            {" · "}
+            {formatDate(ticket.created_at)}
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-5 text-sm">
+          <div>
+            <div className="font-medium mb-1">Descripción original</div>
+            <p className="text-muted-foreground whitespace-pre-wrap">{ticket.descripcion}</p>
+          </div>
+
+          {photoUrl && (
+            <div>
+              <div className="font-medium mb-1.5 flex items-center gap-1.5">
+                <ImageIcon className="w-4 h-4" /> Foto adjunta
+              </div>
+              <a href={photoUrl} target="_blank" rel="noreferrer">
+                <img
+                  src={photoUrl}
+                  alt="Dispositivo"
+                  className="rounded-md border max-h-64 object-contain"
+                />
+              </a>
+            </div>
+          )}
+
+          {causas.length > 0 && (
+            <div>
+              <div className="font-medium mb-1 flex items-center gap-1.5">
+                <AlertTriangle className="w-4 h-4 text-primary" /> Causas probables
+              </div>
+              <ul className="list-disc pl-5 space-y-0.5 text-muted-foreground">
+                {causas.map((c, i) => (
+                  <li key={i}>{c}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {ticket.recomendacion && (
+            <div>
+              <div className="font-medium mb-1 flex items-center gap-1.5">
+                <Lightbulb className="w-4 h-4 text-primary" /> Recomendación
+              </div>
+              <p className="text-muted-foreground">{ticket.recomendacion}</p>
+            </div>
+          )}
+
+          {ticket.coste_estimado && (
+            <div className="flex items-center justify-between border-t border-b py-3">
+              <span className="flex items-center gap-1.5 font-medium">
+                <Euro className="w-4 h-4 text-primary" /> Coste estimado
+              </span>
+              <span className="font-semibold">{ticket.coste_estimado}</span>
+            </div>
+          )}
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <Label>Estado</Label>
+              <Select value={estado} onValueChange={setEstado}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="pendiente">Pendiente</SelectItem>
+                  <SelectItem value="en curso">En curso</SelectItem>
+                  <SelectItem value="terminado">Terminado</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="notas">Notas internas</Label>
+            <Textarea
+              id="notas"
+              value={notas}
+              onChange={(e) => setNotas(e.target.value)}
+              placeholder="Observaciones del técnico…"
+              rows={4}
+            />
+          </div>
+
+          <div className="flex justify-end gap-2 pt-2">
+            <Button variant="outline" onClick={onClose}>
+              Cerrar
+            </Button>
+            <Button onClick={save} disabled={saving}>
+              {saving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              Guardar cambios
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
