@@ -14,7 +14,57 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      tickets: {
+        Row: {
+          categoria: string | null
+          causas: Json | null
+          cliente: string
+          coste_estimado: string | null
+          created_at: string
+          descripcion: string
+          estado: string
+          foto_url: string | null
+          id: string
+          notas: string | null
+          recomendacion: string | null
+          telefono: string | null
+          titulo: string | null
+          urgencia: string | null
+        }
+        Insert: {
+          categoria?: string | null
+          causas?: Json | null
+          cliente: string
+          coste_estimado?: string | null
+          created_at?: string
+          descripcion: string
+          estado?: string
+          foto_url?: string | null
+          id?: string
+          notas?: string | null
+          recomendacion?: string | null
+          telefono?: string | null
+          titulo?: string | null
+          urgencia?: string | null
+        }
+        Update: {
+          categoria?: string | null
+          causas?: Json | null
+          cliente?: string
+          coste_estimado?: string | null
+          created_at?: string
+          descripcion?: string
+          estado?: string
+          foto_url?: string | null
+          id?: string
+          notas?: string | null
+          recomendacion?: string | null
+          telefono?: string | null
+          titulo?: string | null
+          urgencia?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
