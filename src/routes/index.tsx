@@ -1,24 +1,285 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { supabase } from "@/integrations/supabase/client";
+import { analyzeTicket, type Diagnostico } from "@/lib/tickets.functions";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
+import {
+  Cpu,
+  Wrench,
+  Upload,
+  Sparkles,
+  ClipboardList,
+  AlertTriangle,
+  Lightbulb,
+  Euro,
+  LayoutDashboard,
+  Loader2,
+  CheckCircle2,
+} from "lucide-react";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
 export const Route = createFileRoute("/")({
-  component: Index,
+  component: NewTicketPage,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
-function Index() {
+type Result = { diagnostico: Diagnostico; ticketId: string };
+
+const urgencyBadge = (u: string) => {
+  if (u === "Alta")
+    return "bg-[color:var(--color-urgency-high)] text-[color:var(--color-urgency-high-foreground)] hover:bg-[color:var(--color-urgency-high)]";
+  if (u === "Media")
+    return "bg-[color:var(--color-urgency-med)] text-[color:var(--color-urgency-med-foreground)] hover:bg-[color:var(--color-urgency-med)]";
+  return "bg-[color:var(--color-urgency-low)] text-[color:var(--color-urgency-low-foreground)] hover:bg-[color:var(--color-urgency-low)]";
+};
+
+function NewTicketPage() {
+  const analyzeFn = useServerFn(analyzeTicket);
+  const [cliente, setCliente] = useState("");
+  const [telefono, setTelefono] = useState("");
+  const [descripcion, setDescripcion] = useState("");
+  const [foto, setFoto] = useState<File | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<Result | null>(null);
+
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!cliente.trim() || !descripcion.trim()) {
+      toast.error("Rellena el nombre y la descripción.");
+      return;
+    }
+    setLoading(true);
+    try {
+      // 1. Upload photo if provided (store path only)
+      let foto_path: string | null = null;
+      if (foto) {
+        const ext = foto.name.split(".").pop() ?? "jpg";
+        const path = `${crypto.randomUUID()}.${ext}`;
+        const { error: upErr } = await supabase.storage
+          .from("ticket-photos")
+          .upload(path, foto, { contentType: foto.type });
+        if (upErr) throw upErr;
+        foto_path = path;
+      }
+
+      // 2. Get AI diagnosis
+      const diag = await analyzeFn({ data: { descripcion } });
+
+      // 3. Insert ticket
+      const { data: inserted, error } = await supabase
+        .from("tickets")
+        .insert({
+          cliente: cliente.trim(),
+          telefono: telefono.trim() || null,
+          descripcion: descripcion.trim(),
+          foto_url: foto_path,
+          categoria: diag.categoria,
+          urgencia: diag.urgencia,
+          titulo: diag.titulo,
+          causas: diag.causas,
+          recomendacion: diag.recomendacion,
+          coste_estimado: diag.coste_estimado,
+          estado: "pendiente",
+        })
+        .select("id")
+        .single();
+      if (error) throw error;
+
+      setResult({ diagnostico: diag, ticketId: inserted.id });
+      toast.success("Ticket creado y diagnóstico generado.");
+      setCliente("");
+      setTelefono("");
+      setDescripcion("");
+      setFoto(null);
+    } catch (err) {
+      console.error(err);
+      toast.error(err instanceof Error ? err.message : "Error al procesar el ticket.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
+    <div className="min-h-screen">
+      <header className="border-b bg-background/70 backdrop-blur sticky top-0 z-10">
+        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+          <Link to="/" className="flex items-center gap-2 font-semibold">
+            <div className="w-9 h-9 rounded-lg bg-primary text-primary-foreground grid place-items-center">
+              <Wrench className="w-5 h-5" />
+            </div>
+            <span className="text-lg tracking-tight">
+              Repair<span className="text-primary">Flow</span>
+            </span>
+          </Link>
+          <Button asChild variant="ghost" size="sm">
+            <Link to="/admin">
+              <LayoutDashboard className="w-4 h-4 mr-1.5" />
+              Panel técnico
+            </Link>
+          </Button>
+        </div>
+      </header>
+
+      <main className="max-w-4xl mx-auto px-4 py-8 md:py-12">
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center gap-1.5 text-xs font-medium bg-accent text-accent-foreground px-3 py-1 rounded-full mb-3">
+            <Sparkles className="w-3.5 h-3.5" />
+            Diagnóstico con IA
+          </div>
+          <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Nuevo ticket de reparación</h1>
+          <p className="text-muted-foreground mt-2 max-w-xl mx-auto">
+            Cuéntanos qué le pasa a tu equipo y recibirás al instante un diagnóstico técnico y un coste estimado.
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-5 gap-6">
+          <Card className="md:col-span-3">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <ClipboardList className="w-5 h-5 text-primary" />
+                Datos del ticket
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={onSubmit} className="space-y-4">
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="cliente">Nombre del cliente *</Label>
+                    <Input
+                      id="cliente"
+                      value={cliente}
+                      onChange={(e) => setCliente(e.target.value)}
+                      placeholder="Ej. Ana García"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="telefono">Teléfono</Label>
+                    <Input
+                      id="telefono"
+                      value={telefono}
+                      onChange={(e) => setTelefono(e.target.value)}
+                      placeholder="Opcional"
+                      inputMode="tel"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="descripcion">Describe el problema *</Label>
+                  <Textarea
+                    id="descripcion"
+                    value={descripcion}
+                    onChange={(e) => setDescripcion(e.target.value)}
+                    placeholder="Ej. El portátil no arranca, se enciende el LED pero la pantalla queda negra..."
+                    rows={5}
+                    required
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="foto">Foto del dispositivo (opcional)</Label>
+                  <label
+                    htmlFor="foto"
+                    className="flex items-center gap-3 border border-dashed rounded-md px-4 py-3 cursor-pointer hover:bg-accent/40 transition"
+                  >
+                    <Upload className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground truncate">
+                      {foto ? foto.name : "Adjuntar imagen (JPG, PNG)"}
+                    </span>
+                    <input
+                      id="foto"
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => setFoto(e.target.files?.[0] ?? null)}
+                    />
+                  </label>
+                </div>
+
+                <Button type="submit" className="w-full" size="lg" disabled={loading}>
+                  {loading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Analizando…
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-4 h-4 mr-2" />
+                      Generar diagnóstico
+                    </>
+                  )}
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+
+          <div className="md:col-span-2">
+            {result ? (
+              <Card className="border-primary/30 shadow-lg shadow-primary/5">
+                <CardHeader className="pb-3">
+                  <div className="flex items-center gap-2 text-xs text-primary font-medium">
+                    <CheckCircle2 className="w-4 h-4" />
+                    Diagnóstico generado
+                  </div>
+                  <CardTitle className="text-xl leading-snug">{result.diagnostico.titulo}</CardTitle>
+                  <div className="flex flex-wrap gap-2 pt-1">
+                    <Badge variant="secondary" className="gap-1">
+                      <Cpu className="w-3 h-3" />
+                      {result.diagnostico.categoria}
+                    </Badge>
+                    <Badge className={urgencyBadge(result.diagnostico.urgencia)}>
+                      Urgencia {result.diagnostico.urgencia}
+                    </Badge>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4 text-sm">
+                  <div>
+                    <div className="flex items-center gap-1.5 font-medium mb-1.5">
+                      <AlertTriangle className="w-4 h-4 text-primary" />
+                      Causas probables
+                    </div>
+                    <ul className="list-disc pl-5 space-y-0.5 text-muted-foreground">
+                      {result.diagnostico.causas.map((c, i) => (
+                        <li key={i}>{c}</li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-1.5 font-medium mb-1">
+                      <Lightbulb className="w-4 h-4 text-primary" />
+                      Recomendación
+                    </div>
+                    <p className="text-muted-foreground">{result.diagnostico.recomendacion}</p>
+                  </div>
+                  <div className="flex items-center justify-between border-t pt-3">
+                    <span className="flex items-center gap-1.5 font-medium">
+                      <Euro className="w-4 h-4 text-primary" />
+                      Coste estimado
+                    </span>
+                    <span className="font-semibold">{result.diagnostico.coste_estimado}</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Ticket #{result.ticketId.slice(0, 8)} guardado como <b>pendiente</b>.
+                  </p>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card className="bg-accent/30 border-dashed">
+                <CardContent className="py-10 text-center text-sm text-muted-foreground">
+                  <Sparkles className="w-8 h-8 mx-auto mb-3 text-primary/60" />
+                  Envía el formulario para recibir un diagnóstico técnico automático.
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </div>
+      </main>
     </div>
   );
 }
