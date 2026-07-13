@@ -70,8 +70,8 @@ function NewTicketPage() {
         foto_path = path;
       }
 
-      // 2. Get AI diagnosis
-      const diag = await analyzeFn({ data: { descripcion } });
+      // 2. Get AI diagnosis (optional)
+      const diag = withAi ? await analyzeFn({ data: { descripcion } }) : null;
 
       // 3. Insert ticket
       const { data: inserted, error } = await supabase
@@ -81,20 +81,21 @@ function NewTicketPage() {
           telefono: telefono.trim() || null,
           descripcion: descripcion.trim(),
           foto_url: foto_path,
-          categoria: diag.categoria,
-          urgencia: diag.urgencia,
-          titulo: diag.titulo,
-          causas: diag.causas,
-          recomendacion: diag.recomendacion,
-          coste_estimado: diag.coste_estimado,
+          categoria: diag?.categoria ?? null,
+          urgencia: diag?.urgencia ?? null,
+          titulo: diag?.titulo ?? null,
+          causas: diag?.causas ?? null,
+          recomendacion: diag?.recomendacion ?? null,
+          coste_estimado: diag?.coste_estimado ?? null,
           estado: "pendiente",
         })
         .select("id")
         .single();
       if (error) throw error;
 
-      setResult({ diagnostico: diag, ticketId: inserted.id });
-      toast.success("Ticket creado y diagnóstico generado.");
+      setResult(diag ? { diagnostico: diag, ticketId: inserted.id } : null);
+      toast.success(diag ? "Ticket creado y diagnóstico generado." : "Ticket guardado.");
+
       setCliente("");
       setTelefono("");
       setDescripcion("");
