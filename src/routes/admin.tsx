@@ -295,6 +295,8 @@ function TicketDetail({
   const analyzeFn = useServerFn(analyzeTicket);
   const [notas, setNotas] = useState("");
   const [estado, setEstado] = useState("pendiente");
+  const [descripcion, setDescripcion] = useState("");
+  const [urgencia, setUrgencia] = useState<string>("");
   const [saving, setSaving] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
@@ -303,6 +305,8 @@ function TicketDetail({
     if (!ticket) return;
     setNotas(ticket.notas ?? "");
     setEstado(ticket.estado);
+    setDescripcion(ticket.descripcion);
+    setUrgencia(ticket.urgencia ?? "");
     setPhotoUrl(null);
     if (ticket.foto_url) {
       supabase.storage
