@@ -152,7 +152,7 @@ function NewTicketPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <form onSubmit={onSubmit} className="space-y-4">
+              <form onSubmit={(e) => e.preventDefault()} className="space-y-4">
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <Label htmlFor="cliente">Nombre del cliente *</Label>
