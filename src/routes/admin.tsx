@@ -409,9 +409,18 @@ function TicketDetail({
         </DialogHeader>
 
         <div className="space-y-5 text-sm">
-          <div>
-            <div className="font-medium mb-1">Descripción original</div>
-            <p className="text-muted-foreground whitespace-pre-wrap">{ticket.descripcion}</p>
+          <div className="space-y-1.5">
+            <Label htmlFor="descripcion">Descripción del problema</Label>
+            <Textarea
+              id="descripcion"
+              value={descripcion}
+              onChange={(e) => setDescripcion(e.target.value)}
+              rows={4}
+              placeholder="Descripción original o actualizada del problema…"
+            />
+            <p className="text-xs text-muted-foreground">
+              El técnico puede actualizar la descripción con datos nuevos.
+            </p>
           </div>
 
           {photoUrl && (
