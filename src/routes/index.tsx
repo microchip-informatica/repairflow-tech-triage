@@ -105,8 +105,10 @@ function NewTicketPage() {
       toast.error(err instanceof Error ? err.message : "Error al procesar el ticket.");
     } finally {
       setLoading(false);
+      setLoadingKind(null);
     }
   };
+
 
   return (
     <div className="min-h-screen">
