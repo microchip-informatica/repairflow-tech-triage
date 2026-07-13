@@ -1,6 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
+import { analyzeTicket } from "@/lib/tickets.functions";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -34,7 +37,9 @@ import {
   Loader2,
   ArrowLeft,
   Image as ImageIcon,
+  Sparkles,
 } from "lucide-react";
+
 
 export const Route = createFileRoute("/admin")({
   component: AdminPage,
@@ -287,9 +292,11 @@ function TicketDetail({
   onClose: () => void;
   onUpdated: (t: Ticket) => void;
 }) {
+  const analyzeFn = useServerFn(analyzeTicket);
   const [notas, setNotas] = useState("");
   const [estado, setEstado] = useState("pendiente");
   const [saving, setSaving] = useState(false);
+  const [generating, setGenerating] = useState(false);
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
 
   useEffect(() => {
@@ -308,6 +315,9 @@ function TicketDetail({
   if (!ticket) return null;
 
   const causas = Array.isArray(ticket.causas) ? (ticket.causas as string[]) : [];
+  const hasDiagnostico = Boolean(
+    ticket.titulo || ticket.categoria || ticket.urgencia || ticket.recomendacion || causas.length > 0,
+  );
 
   const save = async () => {
     setSaving(true);
@@ -325,6 +335,34 @@ function TicketDetail({
     toast.success("Ticket actualizado");
     onUpdated(data as Ticket);
   };
+
+  const generateDiagnostico = async () => {
+    setGenerating(true);
+    try {
+      const diag = await analyzeFn({ data: { descripcion: ticket.descripcion } });
+      const { data, error } = await supabase
+        .from("tickets")
+        .update({
+          categoria: diag.categoria,
+          urgencia: diag.urgencia,
+          titulo: diag.titulo,
+          causas: diag.causas,
+          recomendacion: diag.recomendacion,
+          coste_estimado: diag.coste_estimado,
+        })
+        .eq("id", ticket.id)
+        .select("*")
+        .single();
+      if (error) throw error;
+      toast.success("Diagnóstico IA generado");
+      onUpdated(data as Ticket);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Error generando diagnóstico");
+    } finally {
+      setGenerating(false);
+    }
+  };
+
 
   return (
     <Dialog open={!!ticket} onOpenChange={(o) => !o && onClose()}>
@@ -380,6 +418,34 @@ function TicketDetail({
               </a>
             </div>
           )}
+
+          <div className="rounded-md border bg-accent/30 p-4">
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <div className="flex items-center gap-2 font-medium">
+                <Sparkles className="w-4 h-4 text-primary" />
+                Diagnóstico IA
+                {hasDiagnostico ? (
+                  <Badge variant="secondary" className="ml-1">Generado</Badge>
+                ) : (
+                  <Badge variant="outline" className="ml-1">Sin generar</Badge>
+                )}
+              </div>
+              <Button size="sm" onClick={generateDiagnostico} disabled={generating}>
+                {generating ? (
+                  <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Analizando…</>
+                ) : (
+                  <><Sparkles className="w-4 h-4 mr-2" /> {hasDiagnostico ? "Regenerar" : "Generar diagnóstico"}</>
+                )}
+              </Button>
+            </div>
+            {!hasDiagnostico && (
+              <p className="text-xs text-muted-foreground mt-2">
+                Aún no se ha generado un análisis técnico automático para este ticket.
+              </p>
+            )}
+          </div>
+
+
 
           {causas.length > 0 && (
             <div>

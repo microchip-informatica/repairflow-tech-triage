@@ -45,15 +45,18 @@ function NewTicketPage() {
   const [descripcion, setDescripcion] = useState("");
   const [foto, setFoto] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
+  const [loadingKind, setLoadingKind] = useState<"save" | "ai" | null>(null);
   const [result, setResult] = useState<Result | null>(null);
 
-  const onSubmit = async (e: React.FormEvent) => {
+  const onSubmit = async (e: React.SyntheticEvent, withAi: boolean) => {
     e.preventDefault();
     if (!cliente.trim() || !descripcion.trim()) {
       toast.error("Rellena el nombre y la descripción.");
       return;
     }
     setLoading(true);
+    setLoadingKind(withAi ? "ai" : "save");
+
     try {
       // 1. Upload photo if provided (store path only)
       let foto_path: string | null = null;
@@ -67,8 +70,8 @@ function NewTicketPage() {
         foto_path = path;
       }
 
-      // 2. Get AI diagnosis
-      const diag = await analyzeFn({ data: { descripcion } });
+      // 2. Get AI diagnosis (optional)
+      const diag = withAi ? await analyzeFn({ data: { descripcion } }) : null;
 
       // 3. Insert ticket
       const { data: inserted, error } = await supabase
@@ -78,20 +81,21 @@ function NewTicketPage() {
           telefono: telefono.trim() || null,
           descripcion: descripcion.trim(),
           foto_url: foto_path,
-          categoria: diag.categoria,
-          urgencia: diag.urgencia,
-          titulo: diag.titulo,
-          causas: diag.causas,
-          recomendacion: diag.recomendacion,
-          coste_estimado: diag.coste_estimado,
+          categoria: diag?.categoria ?? null,
+          urgencia: diag?.urgencia ?? null,
+          titulo: diag?.titulo ?? null,
+          causas: diag?.causas ?? null,
+          recomendacion: diag?.recomendacion ?? null,
+          coste_estimado: diag?.coste_estimado ?? null,
           estado: "pendiente",
         })
         .select("id")
         .single();
       if (error) throw error;
 
-      setResult({ diagnostico: diag, ticketId: inserted.id });
-      toast.success("Ticket creado y diagnóstico generado.");
+      setResult(diag ? { diagnostico: diag, ticketId: inserted.id } : null);
+      toast.success(diag ? "Ticket creado y diagnóstico generado." : "Ticket guardado.");
+
       setCliente("");
       setTelefono("");
       setDescripcion("");
@@ -101,8 +105,10 @@ function NewTicketPage() {
       toast.error(err instanceof Error ? err.message : "Error al procesar el ticket.");
     } finally {
       setLoading(false);
+      setLoadingKind(null);
     }
   };
+
 
   return (
     <div className="min-h-screen">
@@ -146,7 +152,7 @@ function NewTicketPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <form onSubmit={onSubmit} className="space-y-4">
+              <form onSubmit={(e) => e.preventDefault()} className="space-y-4">
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <Label htmlFor="cliente">Nombre del cliente *</Label>
@@ -202,19 +208,46 @@ function NewTicketPage() {
                   </label>
                 </div>
 
-                <Button type="submit" className="w-full" size="lg" disabled={loading}>
-                  {loading ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Analizando…
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="w-4 h-4 mr-2" />
-                      Generar diagnóstico
-                    </>
-                  )}
-                </Button>
+                <div className="grid sm:grid-cols-2 gap-2 pt-1">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="lg"
+                    disabled={loading}
+                    onClick={(e) => onSubmit(e, false)}
+                  >
+                    {loadingKind === "save" ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Guardando…
+                      </>
+                    ) : (
+                      <>
+                        <ClipboardList className="w-4 h-4 mr-2" />
+                        Guardar ticket
+                      </>
+                    )}
+                  </Button>
+                  <Button
+                    type="button"
+                    size="lg"
+                    disabled={loading}
+                    onClick={(e) => onSubmit(e, true)}
+                  >
+                    {loadingKind === "ai" ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Analizando…
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-4 h-4 mr-2" />
+                        Generar diagnóstico
+                      </>
+                    )}
+                  </Button>
+                </div>
+
               </form>
             </CardContent>
           </Card>
