@@ -208,19 +208,46 @@ function NewTicketPage() {
                   </label>
                 </div>
 
-                <Button type="submit" className="w-full" size="lg" disabled={loading}>
-                  {loading ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Analizando…
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="w-4 h-4 mr-2" />
-                      Generar diagnóstico
-                    </>
-                  )}
-                </Button>
+                <div className="grid sm:grid-cols-2 gap-2 pt-1">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="lg"
+                    disabled={loading}
+                    onClick={(e) => onSubmit(e, false)}
+                  >
+                    {loadingKind === "save" ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Guardando…
+                      </>
+                    ) : (
+                      <>
+                        <ClipboardList className="w-4 h-4 mr-2" />
+                        Guardar ticket
+                      </>
+                    )}
+                  </Button>
+                  <Button
+                    type="button"
+                    size="lg"
+                    disabled={loading}
+                    onClick={(e) => onSubmit(e, true)}
+                  >
+                    {loadingKind === "ai" ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Analizando…
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-4 h-4 mr-2" />
+                        Generar diagnóstico
+                      </>
+                    )}
+                  </Button>
+                </div>
+
               </form>
             </CardContent>
           </Card>
