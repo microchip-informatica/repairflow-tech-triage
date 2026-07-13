@@ -327,7 +327,12 @@ function TicketDetail({
     setSaving(true);
     const { data, error } = await supabase
       .from("tickets")
-      .update({ estado, notas: notas || null })
+      .update({
+        estado,
+        notas: notas || null,
+        descripcion: descripcion.trim() || ticket.descripcion,
+        urgencia: urgencia || null,
+      })
       .eq("id", ticket.id)
       .select("*")
       .single();
