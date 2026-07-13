@@ -45,15 +45,18 @@ function NewTicketPage() {
   const [descripcion, setDescripcion] = useState("");
   const [foto, setFoto] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
+  const [loadingKind, setLoadingKind] = useState<"save" | "ai" | null>(null);
   const [result, setResult] = useState<Result | null>(null);
 
-  const onSubmit = async (e: React.FormEvent) => {
+  const onSubmit = async (e: React.FormEvent, withAi: boolean) => {
     e.preventDefault();
     if (!cliente.trim() || !descripcion.trim()) {
       toast.error("Rellena el nombre y la descripción.");
       return;
     }
     setLoading(true);
+    setLoadingKind(withAi ? "ai" : "save");
+
     try {
       // 1. Upload photo if provided (store path only)
       let foto_path: string | null = null;
