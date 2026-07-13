@@ -292,9 +292,11 @@ function TicketDetail({
   onClose: () => void;
   onUpdated: (t: Ticket) => void;
 }) {
+  const analyzeFn = useServerFn(analyzeTicket);
   const [notas, setNotas] = useState("");
   const [estado, setEstado] = useState("pendiente");
   const [saving, setSaving] = useState(false);
+  const [generating, setGenerating] = useState(false);
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
 
   useEffect(() => {
@@ -313,6 +315,9 @@ function TicketDetail({
   if (!ticket) return null;
 
   const causas = Array.isArray(ticket.causas) ? (ticket.causas as string[]) : [];
+  const hasDiagnostico = Boolean(
+    ticket.titulo || ticket.categoria || ticket.urgencia || ticket.recomendacion || causas.length > 0,
+  );
 
   const save = async () => {
     setSaving(true);
@@ -330,6 +335,34 @@ function TicketDetail({
     toast.success("Ticket actualizado");
     onUpdated(data as Ticket);
   };
+
+  const generateDiagnostico = async () => {
+    setGenerating(true);
+    try {
+      const diag = await analyzeFn({ data: { descripcion: ticket.descripcion } });
+      const { data, error } = await supabase
+        .from("tickets")
+        .update({
+          categoria: diag.categoria,
+          urgencia: diag.urgencia,
+          titulo: diag.titulo,
+          causas: diag.causas,
+          recomendacion: diag.recomendacion,
+          coste_estimado: diag.coste_estimado,
+        })
+        .eq("id", ticket.id)
+        .select("*")
+        .single();
+      if (error) throw error;
+      toast.success("Diagnóstico IA generado");
+      onUpdated(data as Ticket);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Error generando diagnóstico");
+    } finally {
+      setGenerating(false);
+    }
+  };
+
 
   return (
     <Dialog open={!!ticket} onOpenChange={(o) => !o && onClose()}>
