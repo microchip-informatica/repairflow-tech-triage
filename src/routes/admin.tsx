@@ -37,7 +37,9 @@ import {
   Loader2,
   ArrowLeft,
   Image as ImageIcon,
+  Sparkles,
 } from "lucide-react";
+
 
 export const Route = createFileRoute("/admin")({
   component: AdminPage,
