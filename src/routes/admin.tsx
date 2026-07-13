@@ -419,6 +419,34 @@ function TicketDetail({
             </div>
           )}
 
+          <div className="rounded-md border bg-accent/30 p-4">
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <div className="flex items-center gap-2 font-medium">
+                <Sparkles className="w-4 h-4 text-primary" />
+                Diagnóstico IA
+                {hasDiagnostico ? (
+                  <Badge variant="secondary" className="ml-1">Generado</Badge>
+                ) : (
+                  <Badge variant="outline" className="ml-1">Sin generar</Badge>
+                )}
+              </div>
+              <Button size="sm" onClick={generateDiagnostico} disabled={generating}>
+                {generating ? (
+                  <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Analizando…</>
+                ) : (
+                  <><Sparkles className="w-4 h-4 mr-2" /> {hasDiagnostico ? "Regenerar" : "Generar diagnóstico"}</>
+                )}
+              </Button>
+            </div>
+            {!hasDiagnostico && (
+              <p className="text-xs text-muted-foreground mt-2">
+                Aún no se ha generado un análisis técnico automático para este ticket.
+              </p>
+            )}
+          </div>
+
+
+
           {causas.length > 0 && (
             <div>
               <div className="font-medium mb-1 flex items-center gap-1.5">
