@@ -48,7 +48,7 @@ function NewTicketPage() {
   const [loadingKind, setLoadingKind] = useState<"save" | "ai" | null>(null);
   const [result, setResult] = useState<Result | null>(null);
 
-  const onSubmit = async (e: React.FormEvent, withAi: boolean) => {
+  const onSubmit = async (e: React.SyntheticEvent, withAi: boolean) => {
     e.preventDefault();
     if (!cliente.trim() || !descripcion.trim()) {
       toast.error("Rellena el nombre y la descripción.");
