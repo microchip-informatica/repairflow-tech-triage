@@ -511,6 +511,20 @@ function TicketDetail({
                 </SelectContent>
               </Select>
             </div>
+            <div className="space-y-1.5">
+              <Label>Urgencia</Label>
+              <Select value={urgencia || "none"} onValueChange={(v) => setUrgencia(v === "none" ? "" : v)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Sin definir" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Sin definir</SelectItem>
+                  <SelectItem value="Alta">Alta</SelectItem>
+                  <SelectItem value="Media">Media</SelectItem>
+                  <SelectItem value="Baja">Baja</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           <div className="space-y-1.5">
