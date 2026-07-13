@@ -348,7 +348,8 @@ function TicketDetail({
   const generateDiagnostico = async () => {
     setGenerating(true);
     try {
-      const diag = await analyzeFn({ data: { descripcion: ticket.descripcion } });
+      const currentDesc = descripcion.trim() || ticket.descripcion;
+      const diag = await analyzeFn({ data: { descripcion: currentDesc } });
       const { data, error } = await supabase
         .from("tickets")
         .update({
