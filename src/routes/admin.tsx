@@ -295,6 +295,8 @@ function TicketDetail({
   const analyzeFn = useServerFn(analyzeTicket);
   const [notas, setNotas] = useState("");
   const [estado, setEstado] = useState("pendiente");
+  const [descripcion, setDescripcion] = useState("");
+  const [urgencia, setUrgencia] = useState<string>("");
   const [saving, setSaving] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
@@ -303,6 +305,8 @@ function TicketDetail({
     if (!ticket) return;
     setNotas(ticket.notas ?? "");
     setEstado(ticket.estado);
+    setDescripcion(ticket.descripcion);
+    setUrgencia(ticket.urgencia ?? "");
     setPhotoUrl(null);
     if (ticket.foto_url) {
       supabase.storage
@@ -323,7 +327,12 @@ function TicketDetail({
     setSaving(true);
     const { data, error } = await supabase
       .from("tickets")
-      .update({ estado, notas: notas || null })
+      .update({
+        estado,
+        notas: notas || null,
+        descripcion: descripcion.trim() || ticket.descripcion,
+        urgencia: urgencia || null,
+      })
       .eq("id", ticket.id)
       .select("*")
       .single();
@@ -339,7 +348,8 @@ function TicketDetail({
   const generateDiagnostico = async () => {
     setGenerating(true);
     try {
-      const diag = await analyzeFn({ data: { descripcion: ticket.descripcion } });
+      const currentDesc = descripcion.trim() || ticket.descripcion;
+      const diag = await analyzeFn({ data: { descripcion: currentDesc } });
       const { data, error } = await supabase
         .from("tickets")
         .update({
@@ -399,9 +409,18 @@ function TicketDetail({
         </DialogHeader>
 
         <div className="space-y-5 text-sm">
-          <div>
-            <div className="font-medium mb-1">Descripción original</div>
-            <p className="text-muted-foreground whitespace-pre-wrap">{ticket.descripcion}</p>
+          <div className="space-y-1.5">
+            <Label htmlFor="descripcion">Descripción del problema</Label>
+            <Textarea
+              id="descripcion"
+              value={descripcion}
+              onChange={(e) => setDescripcion(e.target.value)}
+              rows={4}
+              placeholder="Descripción original o actualizada del problema…"
+            />
+            <p className="text-xs text-muted-foreground">
+              El técnico puede actualizar la descripción con datos nuevos.
+            </p>
           </div>
 
           {photoUrl && (
@@ -489,6 +508,20 @@ function TicketDetail({
                   <SelectItem value="pendiente">Pendiente</SelectItem>
                   <SelectItem value="en curso">En curso</SelectItem>
                   <SelectItem value="terminado">Terminado</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label>Urgencia</Label>
+              <Select value={urgencia || "none"} onValueChange={(v) => setUrgencia(v === "none" ? "" : v)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Sin definir" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Sin definir</SelectItem>
+                  <SelectItem value="Alta">Alta</SelectItem>
+                  <SelectItem value="Media">Media</SelectItem>
+                  <SelectItem value="Baja">Baja</SelectItem>
                 </SelectContent>
               </Select>
             </div>
