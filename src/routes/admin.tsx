@@ -435,7 +435,17 @@ function TicketDetail({
             )}
             {" · "}
             {formatDate(ticket.created_at)}
+            {ticket.tecnico_nombre && (
+              <>
+                {" · "}
+                <span className="inline-flex items-center gap-1">
+                  <UserCircle2 className="w-3 h-3" />
+                  {ticket.tecnico_nombre}
+                </span>
+              </>
+            )}
           </DialogDescription>
+
         </DialogHeader>
 
         <div className="space-y-5 text-sm">
