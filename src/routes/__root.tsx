@@ -7,11 +7,17 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
+
 import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Toaster } from "@/components/ui/sonner";
+import { TecnicoProvider, useTecnico } from "@/hooks/use-tecnico";
+import { Loader2 } from "lucide-react";
+import { LoginScreen } from "@/components/login-screen";
+
+
 
 function NotFoundComponent() {
   return (
@@ -118,8 +124,31 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Outlet />
+      <TecnicoProvider>
+        <AuthGate />
+      </TecnicoProvider>
       <Toaster richColors position="top-center" />
     </QueryClientProvider>
   );
 }
+
+function AuthGate() {
+  const { tecnico, loading } = useTecnico();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen grid place-items-center">
+        <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (!tecnico) {
+    return <LoginScreen />;
+  }
+
+
+
+  return <Outlet />;
+}
+

@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { analyzeTicket } from "@/lib/tickets.functions";
+import { useTecnico } from "@/hooks/use-tecnico";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,7 +39,10 @@ import {
   ArrowLeft,
   Image as ImageIcon,
   Sparkles,
+  UserCircle2,
+  LogOut,
 } from "lucide-react";
+
 
 
 export const Route = createFileRoute("/admin")({
@@ -60,7 +64,10 @@ type Ticket = {
   estado: string;
   notas: string | null;
   created_at: string;
+  tecnico_id: string | null;
+  tecnico_nombre: string | null;
 };
+
 
 const urgencyBadge = (u: string | null) => {
   if (u === "Alta")
@@ -88,9 +95,11 @@ function formatDate(iso: string) {
 }
 
 function AdminPage() {
+  const { tecnico, logout } = useTecnico();
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<Ticket | null>(null);
+
 
   const [search, setSearch] = useState("");
   const [fUrgencia, setFUrgencia] = useState<string>("all");
@@ -144,12 +153,25 @@ function AdminPage() {
               <span className="text-muted-foreground font-normal ml-1.5 text-sm">/ Panel</span>
             </span>
           </Link>
-          <Button asChild variant="ghost" size="sm">
-            <Link to="/">
-              <ArrowLeft className="w-4 h-4 mr-1.5" />
-              Nuevo ticket
-            </Link>
-          </Button>
+          <div className="flex items-center gap-2">
+            {tecnico && (
+              <span className="hidden sm:inline-flex items-center gap-1.5 text-sm text-muted-foreground px-2.5 py-1 rounded-md bg-accent/60">
+                <UserCircle2 className="w-4 h-4" />
+                {tecnico.nombre}
+              </span>
+            )}
+            <Button asChild variant="ghost" size="sm">
+              <Link to="/">
+                <ArrowLeft className="w-4 h-4 mr-1.5" />
+                Nuevo ticket
+              </Link>
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => logout()}>
+              <LogOut className="w-4 h-4 mr-1.5" />
+              Salir
+            </Button>
+          </div>
+
         </div>
       </header>
 
@@ -293,6 +315,8 @@ function TicketDetail({
   onUpdated: (t: Ticket) => void;
 }) {
   const analyzeFn = useServerFn(analyzeTicket);
+  const { tecnico } = useTecnico();
+
   const [notas, setNotas] = useState("");
   const [estado, setEstado] = useState("pendiente");
   const [descripcion, setDescripcion] = useState("");
@@ -332,11 +356,14 @@ function TicketDetail({
         notas: notas || null,
         descripcion: descripcion.trim() || ticket.descripcion,
         urgencia: urgencia || null,
+        tecnico_id: tecnico?.id ?? null,
+        tecnico_nombre: tecnico?.nombre ?? null,
       })
       .eq("id", ticket.id)
       .select("*")
       .single();
     setSaving(false);
+
     if (error) {
       toast.error("No se pudo guardar");
       return;
@@ -359,10 +386,13 @@ function TicketDetail({
           causas: diag.causas,
           recomendacion: diag.recomendacion,
           coste_estimado: diag.coste_estimado,
+          tecnico_id: tecnico?.id ?? null,
+          tecnico_nombre: tecnico?.nombre ?? null,
         })
         .eq("id", ticket.id)
         .select("*")
         .single();
+
       if (error) throw error;
       toast.success("Diagnóstico IA generado");
       onUpdated(data as Ticket);
@@ -405,7 +435,17 @@ function TicketDetail({
             )}
             {" · "}
             {formatDate(ticket.created_at)}
+            {ticket.tecnico_nombre && (
+              <>
+                {" · "}
+                <span className="inline-flex items-center gap-1">
+                  <UserCircle2 className="w-3 h-3" />
+                  {ticket.tecnico_nombre}
+                </span>
+              </>
+            )}
           </DialogDescription>
+
         </DialogHeader>
 
         <div className="space-y-5 text-sm">
