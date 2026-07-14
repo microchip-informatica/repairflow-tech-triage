@@ -1,9 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { supabase } from "@/integrations/supabase/client";
-import { analyzeTicket } from "@/lib/tickets.functions";
+import {
+  listTickets,
+  updateTicket as updateTicketFn,
+  regenerateDiagnostico,
+  getTicketPhotoUrl,
+  type TicketRow,
+} from "@/lib/tickets-data.functions";
 import { useTecnico } from "@/hooks/use-tecnico";
+
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -49,24 +55,8 @@ export const Route = createFileRoute("/admin")({
   component: AdminPage,
 });
 
-type Ticket = {
-  id: string;
-  cliente: string;
-  telefono: string | null;
-  descripcion: string;
-  foto_url: string | null;
-  categoria: string | null;
-  urgencia: string | null;
-  titulo: string | null;
-  causas: unknown;
-  recomendacion: string | null;
-  coste_estimado: string | null;
-  estado: string;
-  notas: string | null;
-  created_at: string;
-  tecnico_id: string | null;
-  tecnico_nombre: string | null;
-};
+type Ticket = TicketRow;
+
 
 
 const urgencyBadge = (u: string | null) => {
@@ -96,6 +86,7 @@ function formatDate(iso: string) {
 
 function AdminPage() {
   const { tecnico, logout } = useTecnico();
+  const listFn = useServerFn(listTickets);
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<Ticket | null>(null);
@@ -108,17 +99,16 @@ function AdminPage() {
 
   const load = async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from("tickets")
-      .select("*")
-      .order("created_at", { ascending: false });
-    if (error) {
+    try {
+      const data = await listFn();
+      setTickets(data);
+    } catch {
       toast.error("Error cargando tickets");
-    } else {
-      setTickets((data ?? []) as Ticket[]);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
+
 
   useEffect(() => {
     load();
@@ -314,11 +304,13 @@ function TicketDetail({
   onClose: () => void;
   onUpdated: (t: Ticket) => void;
 }) {
-  const analyzeFn = useServerFn(analyzeTicket);
-  const { tecnico } = useTecnico();
+  const updateFn = useServerFn(updateTicketFn);
+  const regenFn = useServerFn(regenerateDiagnostico);
+  const photoFn = useServerFn(getTicketPhotoUrl);
+  useTecnico(); // ensure session context is present; identity stamped server-side
 
   const [notas, setNotas] = useState("");
-  const [estado, setEstado] = useState("pendiente");
+  const [estado, setEstado] = useState<"pendiente" | "en curso" | "terminado">("pendiente");
   const [descripcion, setDescripcion] = useState("");
   const [urgencia, setUrgencia] = useState<string>("");
   const [saving, setSaving] = useState(false);
@@ -328,80 +320,59 @@ function TicketDetail({
   useEffect(() => {
     if (!ticket) return;
     setNotas(ticket.notas ?? "");
-    setEstado(ticket.estado);
+    setEstado((ticket.estado as "pendiente" | "en curso" | "terminado") ?? "pendiente");
     setDescripcion(ticket.descripcion);
     setUrgencia(ticket.urgencia ?? "");
     setPhotoUrl(null);
     if (ticket.foto_url) {
-      supabase.storage
-        .from("ticket-photos")
-        .createSignedUrl(ticket.foto_url, 3600)
-        .then(({ data }) => setPhotoUrl(data?.signedUrl ?? null));
+      photoFn({ data: { path: ticket.foto_url } })
+        .then((res) => setPhotoUrl(res.url))
+        .catch(() => setPhotoUrl(null));
     }
-  }, [ticket]);
+  }, [ticket, photoFn]);
 
   if (!ticket) return null;
 
-  const causas = Array.isArray(ticket.causas) ? (ticket.causas as string[]) : [];
+  const causas = Array.isArray(ticket.causas) ? ticket.causas : [];
   const hasDiagnostico = Boolean(
     ticket.titulo || ticket.categoria || ticket.urgencia || ticket.recomendacion || causas.length > 0,
   );
 
   const save = async () => {
     setSaving(true);
-    const { data, error } = await supabase
-      .from("tickets")
-      .update({
-        estado,
-        notas: notas || null,
-        descripcion: descripcion.trim() || ticket.descripcion,
-        urgencia: urgencia || null,
-        tecnico_id: tecnico?.id ?? null,
-        tecnico_nombre: tecnico?.nombre ?? null,
-      })
-      .eq("id", ticket.id)
-      .select("*")
-      .single();
-    setSaving(false);
-
-    if (error) {
-      toast.error("No se pudo guardar");
-      return;
+    try {
+      const updated = await updateFn({
+        data: {
+          id: ticket.id,
+          estado,
+          notas: notas || null,
+          descripcion: descripcion.trim() || ticket.descripcion,
+          urgencia: (urgencia || null) as "Alta" | "Media" | "Baja" | null,
+        },
+      });
+      toast.success("Ticket actualizado");
+      onUpdated(updated);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "No se pudo guardar");
+    } finally {
+      setSaving(false);
     }
-    toast.success("Ticket actualizado");
-    onUpdated(data as Ticket);
   };
 
   const generateDiagnostico = async () => {
     setGenerating(true);
     try {
       const currentDesc = descripcion.trim() || ticket.descripcion;
-      const diag = await analyzeFn({ data: { descripcion: currentDesc } });
-      const { data, error } = await supabase
-        .from("tickets")
-        .update({
-          categoria: diag.categoria,
-          urgencia: diag.urgencia,
-          titulo: diag.titulo,
-          causas: diag.causas,
-          recomendacion: diag.recomendacion,
-          coste_estimado: diag.coste_estimado,
-          tecnico_id: tecnico?.id ?? null,
-          tecnico_nombre: tecnico?.nombre ?? null,
-        })
-        .eq("id", ticket.id)
-        .select("*")
-        .single();
-
-      if (error) throw error;
+      const updated = await regenFn({ data: { id: ticket.id, descripcion: currentDesc } });
       toast.success("Diagnóstico IA generado");
-      onUpdated(data as Ticket);
+      onUpdated(updated);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Error generando diagnóstico");
     } finally {
       setGenerating(false);
     }
   };
+
 
 
   return (
@@ -540,7 +511,7 @@ function TicketDetail({
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="space-y-1.5">
               <Label>Estado</Label>
-              <Select value={estado} onValueChange={setEstado}>
+              <Select value={estado} onValueChange={(v) => setEstado(v as typeof estado)}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>

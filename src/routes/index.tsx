@@ -1,8 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { supabase } from "@/integrations/supabase/client";
-import { analyzeTicket, type Diagnostico } from "@/lib/tickets.functions";
+import { createTicket } from "@/lib/tickets-data.functions";
+import type { Diagnostico } from "@/lib/tickets.functions";
 import { useTecnico } from "@/hooks/use-tecnico";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,6 +32,7 @@ export const Route = createFileRoute("/")({
   component: NewTicketPage,
 });
 
+
 type Result = { diagnostico: Diagnostico; ticketId: string };
 
 const urgencyBadge = (u: string) => {
@@ -43,7 +44,7 @@ const urgencyBadge = (u: string) => {
 };
 
 function NewTicketPage() {
-  const analyzeFn = useServerFn(analyzeTicket);
+  const createFn = useServerFn(createTicket);
   const { tecnico, logout } = useTecnico();
   const [cliente, setCliente] = useState("");
   const [telefono, setTelefono] = useState("");
@@ -53,6 +54,13 @@ function NewTicketPage() {
   const [loadingKind, setLoadingKind] = useState<"save" | "ai" | null>(null);
   const [result, setResult] = useState<Result | null>(null);
 
+  const readFileAsBase64 = (file: File) =>
+    new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result ?? ""));
+      reader.onerror = () => reject(reader.error);
+      reader.readAsDataURL(file);
+    });
 
   const onSubmit = async (e: React.SyntheticEvent, withAi: boolean) => {
     e.preventDefault();
@@ -64,45 +72,39 @@ function NewTicketPage() {
     setLoadingKind(withAi ? "ai" : "save");
 
     try {
-      // 1. Upload photo if provided (store path only)
-      let foto_path: string | null = null;
+      let fotoBase64: string | null = null;
+      let fotoExt: string | null = null;
+      let fotoMime: string | null = null;
       if (foto) {
-        const ext = foto.name.split(".").pop() ?? "jpg";
-        const path = `${crypto.randomUUID()}.${ext}`;
-        const { error: upErr } = await supabase.storage
-          .from("ticket-photos")
-          .upload(path, foto, { contentType: foto.type });
-        if (upErr) throw upErr;
-        foto_path = path;
+        fotoBase64 = await readFileAsBase64(foto);
+        fotoExt = foto.name.split(".").pop() ?? "jpg";
+        fotoMime = foto.type || null;
       }
 
-      // 2. Get AI diagnosis (optional)
-      const diag = withAi ? await analyzeFn({ data: { descripcion } }) : null;
-
-      // 3. Insert ticket
-      const { data: inserted, error } = await supabase
-        .from("tickets")
-        .insert({
+      const { ticket } = await createFn({
+        data: {
           cliente: cliente.trim(),
           telefono: telefono.trim() || null,
           descripcion: descripcion.trim(),
-          foto_url: foto_path,
-          categoria: diag?.categoria ?? null,
-          urgencia: diag?.urgencia ?? null,
-          titulo: diag?.titulo ?? null,
-          causas: diag?.causas ?? null,
-          recomendacion: diag?.recomendacion ?? null,
-          coste_estimado: diag?.coste_estimado ?? null,
-          estado: "pendiente",
-          tecnico_id: tecnico?.id ?? null,
-          tecnico_nombre: tecnico?.nombre ?? null,
-        })
-        .select("id")
-        .single();
-      if (error) throw error;
+          fotoBase64,
+          fotoExt,
+          fotoMime,
+          withAi,
+        },
+      });
 
+      const diag: Diagnostico | null = ticket.titulo && withAi
+        ? {
+            categoria: ticket.categoria ?? "",
+            urgencia: (ticket.urgencia as Diagnostico["urgencia"]) ?? "Media",
+            titulo: ticket.titulo,
+            causas: ticket.causas ?? [],
+            recomendacion: ticket.recomendacion ?? "",
+            coste_estimado: ticket.coste_estimado ?? "",
+          }
+        : null;
 
-      setResult(diag ? { diagnostico: diag, ticketId: inserted.id } : null);
+      setResult(diag ? { diagnostico: diag, ticketId: ticket.id } : null);
       toast.success(diag ? "Ticket creado y diagnóstico generado." : "Ticket guardado.");
 
       setCliente("");
@@ -117,6 +119,7 @@ function NewTicketPage() {
       setLoadingKind(null);
     }
   };
+
 
 
   return (
