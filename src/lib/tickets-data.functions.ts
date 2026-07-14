@@ -139,7 +139,14 @@ export const updateTicket = createServerFn({ method: "POST" })
     const { requireTecnico } = await import("./session.server");
     const { admin, tecnicoId, tecnicoNombre } = await requireTecnico();
 
-    const patch: Record<string, unknown> = {
+    const patch: {
+      estado?: string;
+      notas?: string | null;
+      descripcion?: string;
+      urgencia?: string | null;
+      tecnico_id: string;
+      tecnico_nombre: string;
+    } = {
       tecnico_id: tecnicoId,
       tecnico_nombre: tecnicoNombre,
     };
@@ -147,6 +154,7 @@ export const updateTicket = createServerFn({ method: "POST" })
     if (data.notas !== undefined) patch.notas = data.notas || null;
     if (data.descripcion !== undefined) patch.descripcion = data.descripcion;
     if (data.urgencia !== undefined) patch.urgencia = data.urgencia;
+
 
     const { data: updated, error } = await admin
       .from("tickets")
