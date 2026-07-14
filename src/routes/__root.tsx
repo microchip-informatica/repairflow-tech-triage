@@ -134,7 +134,6 @@ function RootComponent() {
 
 function AuthGate() {
   const { tecnico, loading } = useTecnico();
-  const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   if (loading) {
     return (
@@ -145,18 +144,10 @@ function AuthGate() {
   }
 
   if (!tecnico) {
-    // Render login inline for any route until authenticated.
     return <LoginScreen />;
   }
 
-  // Prevent showing the login page to an authenticated user.
-  if (pathname === "/login") {
-    return (
-      <div className="min-h-screen grid place-items-center">
-        <Link to="/" className="text-primary underline">Ir al inicio</Link>
-      </div>
-    );
-  }
+
 
   return <Outlet />;
 }
