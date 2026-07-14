@@ -15,7 +15,8 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Toaster } from "@/components/ui/sonner";
 import { TecnicoProvider, useTecnico } from "@/hooks/use-tecnico";
 import { Loader2 } from "lucide-react";
-import LoginPage from "./login";
+import { LoginScreen } from "@/components/login-screen";
+
 
 
 function NotFoundComponent() {
