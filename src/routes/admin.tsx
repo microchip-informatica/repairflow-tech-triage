@@ -95,9 +95,11 @@ function formatDate(iso: string) {
 }
 
 function AdminPage() {
+  const { tecnico, logout } = useTecnico();
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<Ticket | null>(null);
+
 
   const [search, setSearch] = useState("");
   const [fUrgencia, setFUrgencia] = useState<string>("all");
@@ -151,12 +153,25 @@ function AdminPage() {
               <span className="text-muted-foreground font-normal ml-1.5 text-sm">/ Panel</span>
             </span>
           </Link>
-          <Button asChild variant="ghost" size="sm">
-            <Link to="/">
-              <ArrowLeft className="w-4 h-4 mr-1.5" />
-              Nuevo ticket
-            </Link>
-          </Button>
+          <div className="flex items-center gap-2">
+            {tecnico && (
+              <span className="hidden sm:inline-flex items-center gap-1.5 text-sm text-muted-foreground px-2.5 py-1 rounded-md bg-accent/60">
+                <UserCircle2 className="w-4 h-4" />
+                {tecnico.nombre}
+              </span>
+            )}
+            <Button asChild variant="ghost" size="sm">
+              <Link to="/">
+                <ArrowLeft className="w-4 h-4 mr-1.5" />
+                Nuevo ticket
+              </Link>
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => logout()}>
+              <LogOut className="w-4 h-4 mr-1.5" />
+              Salir
+            </Button>
+          </div>
+
         </div>
       </header>
 
