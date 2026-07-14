@@ -4,10 +4,10 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
-  useRouterState,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
+
 import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
