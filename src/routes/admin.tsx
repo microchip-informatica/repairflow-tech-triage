@@ -64,7 +64,10 @@ type Ticket = {
   estado: string;
   notas: string | null;
   created_at: string;
+  tecnico_id: string | null;
+  tecnico_nombre: string | null;
 };
+
 
 const urgencyBadge = (u: string | null) => {
   if (u === "Alta")
