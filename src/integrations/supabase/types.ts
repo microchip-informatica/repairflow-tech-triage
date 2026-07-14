@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      tecnicos: {
+        Row: {
+          created_at: string
+          id: string
+          nombre: string
+          password_hash: string
+          username: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          nombre: string
+          password_hash: string
+          username: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          nombre?: string
+          password_hash?: string
+          username?: string
+        }
+        Relationships: []
+      }
       tickets: {
         Row: {
           categoria: string | null
@@ -27,6 +51,8 @@ export type Database = {
           id: string
           notas: string | null
           recomendacion: string | null
+          tecnico_id: string | null
+          tecnico_nombre: string | null
           telefono: string | null
           titulo: string | null
           urgencia: string | null
@@ -43,6 +69,8 @@ export type Database = {
           id?: string
           notas?: string | null
           recomendacion?: string | null
+          tecnico_id?: string | null
+          tecnico_nombre?: string | null
           telefono?: string | null
           titulo?: string | null
           urgencia?: string | null
@@ -59,11 +87,21 @@ export type Database = {
           id?: string
           notas?: string | null
           recomendacion?: string | null
+          tecnico_id?: string | null
+          tecnico_nombre?: string | null
           telefono?: string | null
           titulo?: string | null
           urgencia?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "tickets_tecnico_id_fkey"
+            columns: ["tecnico_id"]
+            isOneToOne: false
+            referencedRelation: "tecnicos"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
