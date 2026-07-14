@@ -123,8 +123,40 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Outlet />
+      <TecnicoProvider>
+        <AuthGate />
+      </TecnicoProvider>
       <Toaster richColors position="top-center" />
     </QueryClientProvider>
   );
 }
+
+function AuthGate() {
+  const { tecnico, loading } = useTecnico();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+
+  if (loading) {
+    return (
+      <div className="min-h-screen grid place-items-center">
+        <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (!tecnico) {
+    // Render login inline for any route until authenticated.
+    return <LoginPage />;
+  }
+
+  // Prevent showing the login page to an authenticated user.
+  if (pathname === "/login") {
+    return (
+      <div className="min-h-screen grid place-items-center">
+        <Link to="/" className="text-primary underline">Ir al inicio</Link>
+      </div>
+    );
+  }
+
+  return <Outlet />;
+}
+
