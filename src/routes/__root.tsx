@@ -146,7 +146,7 @@ function AuthGate() {
 
   if (!tecnico) {
     // Render login inline for any route until authenticated.
-    return <LoginPage />;
+    return <LoginScreen />;
   }
 
   // Prevent showing the login page to an authenticated user.
