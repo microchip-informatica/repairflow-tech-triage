@@ -511,7 +511,7 @@ function TicketDetail({
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="space-y-1.5">
               <Label>Estado</Label>
-              <Select value={estado} onValueChange={setEstado}>
+              <Select value={estado} onValueChange={(v) => setEstado(v as typeof estado)}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
