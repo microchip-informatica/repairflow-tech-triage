@@ -41,7 +41,7 @@ export type TicketRow = {
   categoria: string | null;
   urgencia: string | null;
   titulo: string | null;
-  causas: unknown;
+  causas: string[] | null;
   recomendacion: string | null;
   coste_estimado: string | null;
   estado: string;
@@ -50,6 +50,14 @@ export type TicketRow = {
   tecnico_id: string | null;
   tecnico_nombre: string | null;
 };
+
+function toTicketRow(row: Record<string, unknown>): TicketRow {
+  return {
+    ...(row as unknown as TicketRow),
+    causas: Array.isArray(row.causas) ? (row.causas as string[]) : null,
+  };
+}
+
 
 // --------- Helpers ---------
 
