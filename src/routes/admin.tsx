@@ -1,9 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { supabase } from "@/integrations/supabase/client";
-import { analyzeTicket } from "@/lib/tickets.functions";
+import {
+  listTickets,
+  updateTicket as updateTicketFn,
+  regenerateDiagnostico,
+  getTicketPhotoUrl,
+  type TicketRow,
+} from "@/lib/tickets-data.functions";
 import { useTecnico } from "@/hooks/use-tecnico";
+
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
