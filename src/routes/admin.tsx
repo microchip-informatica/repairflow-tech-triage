@@ -55,24 +55,8 @@ export const Route = createFileRoute("/admin")({
   component: AdminPage,
 });
 
-type Ticket = {
-  id: string;
-  cliente: string;
-  telefono: string | null;
-  descripcion: string;
-  foto_url: string | null;
-  categoria: string | null;
-  urgencia: string | null;
-  titulo: string | null;
-  causas: unknown;
-  recomendacion: string | null;
-  coste_estimado: string | null;
-  estado: string;
-  notas: string | null;
-  created_at: string;
-  tecnico_id: string | null;
-  tecnico_nombre: string | null;
-};
+type Ticket = TicketRow;
+
 
 
 const urgencyBadge = (u: string | null) => {
