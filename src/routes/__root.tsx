@@ -4,6 +4,7 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useRouterState,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
@@ -12,6 +13,10 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Toaster } from "@/components/ui/sonner";
+import { TecnicoProvider, useTecnico } from "@/hooks/use-tecnico";
+import { Loader2 } from "lucide-react";
+import LoginPage from "./login";
+
 
 function NotFoundComponent() {
   return (
