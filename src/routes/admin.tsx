@@ -86,6 +86,7 @@ function formatDate(iso: string) {
 
 function AdminPage() {
   const { tecnico, logout } = useTecnico();
+  const listFn = useServerFn(listTickets);
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<Ticket | null>(null);
@@ -98,17 +99,16 @@ function AdminPage() {
 
   const load = async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from("tickets")
-      .select("*")
-      .order("created_at", { ascending: false });
-    if (error) {
+    try {
+      const data = await listFn();
+      setTickets(data);
+    } catch {
       toast.error("Error cargando tickets");
-    } else {
-      setTickets((data ?? []) as Ticket[]);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
+
 
   useEffect(() => {
     load();
