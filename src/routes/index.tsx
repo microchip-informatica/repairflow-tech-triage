@@ -94,10 +94,13 @@ function NewTicketPage() {
           recomendacion: diag?.recomendacion ?? null,
           coste_estimado: diag?.coste_estimado ?? null,
           estado: "pendiente",
+          tecnico_id: tecnico?.id ?? null,
+          tecnico_nombre: tecnico?.nombre ?? null,
         })
         .select("id")
         .single();
       if (error) throw error;
+
 
       setResult(diag ? { diagnostico: diag, ticketId: inserted.id } : null);
       toast.success(diag ? "Ticket creado y diagnóstico generado." : "Ticket guardado.");
@@ -128,12 +131,25 @@ function NewTicketPage() {
               Repair<span className="text-primary">Flow</span>
             </span>
           </Link>
-          <Button asChild variant="ghost" size="sm">
-            <Link to="/admin">
-              <LayoutDashboard className="w-4 h-4 mr-1.5" />
-              Panel técnico
-            </Link>
-          </Button>
+          <div className="flex items-center gap-2">
+            {tecnico && (
+              <span className="hidden sm:inline-flex items-center gap-1.5 text-sm text-muted-foreground px-2.5 py-1 rounded-md bg-accent/60">
+                <UserCircle2 className="w-4 h-4" />
+                {tecnico.nombre}
+              </span>
+            )}
+            <Button asChild variant="ghost" size="sm">
+              <Link to="/admin">
+                <LayoutDashboard className="w-4 h-4 mr-1.5" />
+                Panel
+              </Link>
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => logout()}>
+              <LogOut className="w-4 h-4 mr-1.5" />
+              Salir
+            </Button>
+          </div>
+
         </div>
       </header>
 
