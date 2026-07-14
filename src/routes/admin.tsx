@@ -315,6 +315,8 @@ function TicketDetail({
   onUpdated: (t: Ticket) => void;
 }) {
   const analyzeFn = useServerFn(analyzeTicket);
+  const { tecnico } = useTecnico();
+
   const [notas, setNotas] = useState("");
   const [estado, setEstado] = useState("pendiente");
   const [descripcion, setDescripcion] = useState("");
@@ -354,11 +356,14 @@ function TicketDetail({
         notas: notas || null,
         descripcion: descripcion.trim() || ticket.descripcion,
         urgencia: urgencia || null,
+        tecnico_id: tecnico?.id ?? null,
+        tecnico_nombre: tecnico?.nombre ?? null,
       })
       .eq("id", ticket.id)
       .select("*")
       .single();
     setSaving(false);
+
     if (error) {
       toast.error("No se pudo guardar");
       return;
@@ -381,10 +386,13 @@ function TicketDetail({
           causas: diag.causas,
           recomendacion: diag.recomendacion,
           coste_estimado: diag.coste_estimado,
+          tecnico_id: tecnico?.id ?? null,
+          tecnico_nombre: tecnico?.nombre ?? null,
         })
         .eq("id", ticket.id)
         .select("*")
         .single();
+
       if (error) throw error;
       toast.success("Diagnóstico IA generado");
       onUpdated(data as Ticket);
