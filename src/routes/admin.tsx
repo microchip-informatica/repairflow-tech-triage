@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { analyzeTicket } from "@/lib/tickets.functions";
+import { useTecnico } from "@/hooks/use-tecnico";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,7 +39,10 @@ import {
   ArrowLeft,
   Image as ImageIcon,
   Sparkles,
+  UserCircle2,
+  LogOut,
 } from "lucide-react";
+
 
 
 export const Route = createFileRoute("/admin")({
