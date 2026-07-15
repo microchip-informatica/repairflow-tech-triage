@@ -111,7 +111,7 @@ export const createTicket = createServerFn({ method: "POST" })
     let diag = null as null | Awaited<ReturnType<typeof import("./ai.server").runAiDiagnostico>>;
     if (data.withAi) {
       const { runAiDiagnostico } = await import("./ai.server");
-      diag = await runAiDiagnostico(data.descripcion);
+      diag = await runAiDiagnostico(data.descripcion, data.detalleTecnico ?? null);
     }
 
     const { data: inserted, error } = await admin
@@ -120,6 +120,7 @@ export const createTicket = createServerFn({ method: "POST" })
         cliente: data.cliente,
         telefono: data.telefono || null,
         descripcion: data.descripcion,
+        detalle_tecnico: data.detalleTecnico || null,
         foto_url: fotoPath,
         categoria: diag?.categoria ?? null,
         urgencia: diag?.urgencia ?? null,
