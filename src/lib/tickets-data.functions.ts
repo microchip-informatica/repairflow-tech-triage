@@ -180,7 +180,7 @@ export const regenerateDiagnostico = createServerFn({ method: "POST" })
     const { admin, tecnicoId, tecnicoNombre } = await requireTecnico();
     const { runAiDiagnostico } = await import("./ai.server");
 
-    const diag = await runAiDiagnostico(data.descripcion);
+    const diag = await runAiDiagnostico(data.descripcion, data.detalleTecnico ?? null);
     const { data: updated, error } = await admin
       .from("tickets")
       .update({
@@ -191,6 +191,7 @@ export const regenerateDiagnostico = createServerFn({ method: "POST" })
         recomendacion: diag.recomendacion,
         coste_estimado: diag.coste_estimado,
         descripcion: data.descripcion,
+        detalle_tecnico: data.detalleTecnico ?? null,
         tecnico_id: tecnicoId,
         tecnico_nombre: tecnicoNombre,
       })
