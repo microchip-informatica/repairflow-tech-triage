@@ -190,7 +190,7 @@ function NewTicketPage() {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label htmlFor="telefono">Teléfono</Label>
+                    <Label htmlFor="telefono">Teléfono / Referencía</Label>
                     <Input
                       id="telefono"
                       value={telefono}
