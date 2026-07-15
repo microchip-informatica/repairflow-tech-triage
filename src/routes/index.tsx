@@ -87,6 +87,7 @@ function NewTicketPage() {
           cliente: cliente.trim(),
           telefono: telefono.trim() || null,
           descripcion: descripcion.trim(),
+          detalleTecnico: detalleTecnico.trim() || null,
           fotoBase64,
           fotoExt,
           fotoMime,
@@ -111,6 +112,7 @@ function NewTicketPage() {
       setCliente("");
       setTelefono("");
       setDescripcion("");
+      setDetalleTecnico("");
       setFoto(null);
     } catch (err) {
       console.error(err);
