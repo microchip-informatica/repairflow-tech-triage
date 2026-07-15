@@ -41,9 +41,9 @@ export function TecnicoProvider({ children }: { children: ReactNode }) {
     setTecnico(t);
   };
   const register = async (username: string, nombre: string, password: string) => {
-    const t = await registerFn({ data: { username, nombre, password } });
-    setTecnico(t);
+    return await registerFn({ data: { username, nombre, password } });
   };
+
   const logout = async () => {
     await logoutFn();
     setTecnico(null);
