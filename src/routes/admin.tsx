@@ -323,6 +323,7 @@ function TicketDetail({
   const [notas, setNotas] = useState("");
   const [estado, setEstado] = useState<"pendiente" | "en curso" | "terminado">("pendiente");
   const [descripcion, setDescripcion] = useState("");
+  const [detalleTecnico, setDetalleTecnico] = useState("");
   const [urgencia, setUrgencia] = useState<string>("");
   const [saving, setSaving] = useState(false);
   const [generating, setGenerating] = useState(false);
@@ -333,6 +334,7 @@ function TicketDetail({
     setNotas(ticket.notas ?? "");
     setEstado((ticket.estado as "pendiente" | "en curso" | "terminado") ?? "pendiente");
     setDescripcion(ticket.descripcion);
+    setDetalleTecnico(ticket.detalle_tecnico ?? "");
     setUrgencia(ticket.urgencia ?? "");
     setPhotoUrl(null);
     if (ticket.foto_url) {
