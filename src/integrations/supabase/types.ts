@@ -16,22 +16,28 @@ export type Database = {
     Tables: {
       tecnicos: {
         Row: {
+          approved: boolean
           created_at: string
           id: string
+          is_admin: boolean
           nombre: string
           password_hash: string
           username: string
         }
         Insert: {
+          approved?: boolean
           created_at?: string
           id?: string
+          is_admin?: boolean
           nombre: string
           password_hash: string
           username: string
         }
         Update: {
+          approved?: boolean
           created_at?: string
           id?: string
+          is_admin?: boolean
           nombre?: string
           password_hash?: string
           username?: string
