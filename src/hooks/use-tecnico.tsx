@@ -14,9 +14,10 @@ type Ctx = {
   tecnico: Tecnico | null;
   loading: boolean;
   login: (username: string, password: string) => Promise<void>;
-  register: (username: string, nombre: string, password: string) => Promise<void>;
+  register: (username: string, nombre: string, password: string) => Promise<{ pending: true }>;
   logout: () => Promise<void>;
 };
+
 
 const TecnicoCtx = createContext<Ctx | null>(null);
 
