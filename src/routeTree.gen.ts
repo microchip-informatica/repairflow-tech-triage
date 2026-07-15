@@ -11,7 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as AdminTecnicosRouteImport } from './routes/admin.tecnicos'
+import { Route as AdminTecnicosRouteImport } from './routes/admin_.tecnicos'
 
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
@@ -24,38 +24,39 @@ const IndexRoute = IndexRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminTecnicosRoute = AdminTecnicosRouteImport.update({
-  id: '/tecnicos',
-  path: '/tecnicos',
-  getParentRoute: () => AdminRoute,
+  id: '/admin_/tecnicos',
+  path: '/admin/tecnicos',
+  getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/admin': typeof AdminRouteWithChildren
+  '/admin': typeof AdminRoute
   '/admin/tecnicos': typeof AdminTecnicosRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/admin': typeof AdminRouteWithChildren
+  '/admin': typeof AdminRoute
   '/admin/tecnicos': typeof AdminTecnicosRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/admin': typeof AdminRouteWithChildren
-  '/admin/tecnicos': typeof AdminTecnicosRoute
+  '/admin': typeof AdminRoute
+  '/admin_/tecnicos': typeof AdminTecnicosRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths: '/' | '/admin' | '/admin/tecnicos'
   fileRoutesByTo: FileRoutesByTo
   to: '/' | '/admin' | '/admin/tecnicos'
-  id: '__root__' | '/' | '/admin' | '/admin/tecnicos'
+  id: '__root__' | '/' | '/admin' | '/admin_/tecnicos'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AdminRoute: typeof AdminRouteWithChildren
+  AdminRoute: typeof AdminRoute
+  AdminTecnicosRoute: typeof AdminTecnicosRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -74,29 +75,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/admin/tecnicos': {
-      id: '/admin/tecnicos'
-      path: '/tecnicos'
+    '/admin_/tecnicos': {
+      id: '/admin_/tecnicos'
+      path: '/admin/tecnicos'
       fullPath: '/admin/tecnicos'
       preLoaderRoute: typeof AdminTecnicosRouteImport
-      parentRoute: typeof AdminRoute
+      parentRoute: typeof rootRouteImport
     }
   }
 }
 
-interface AdminRouteChildren {
-  AdminTecnicosRoute: typeof AdminTecnicosRoute
-}
-
-const AdminRouteChildren: AdminRouteChildren = {
-  AdminTecnicosRoute: AdminTecnicosRoute,
-}
-
-const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AdminRoute: AdminRouteWithChildren,
+  AdminRoute: AdminRoute,
+  AdminTecnicosRoute: AdminTecnicosRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
