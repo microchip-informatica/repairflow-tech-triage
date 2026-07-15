@@ -451,6 +451,22 @@ function TicketDetail({
             </p>
           </div>
 
+          <div className="space-y-1.5">
+            <Label htmlFor="detalleTecnico">Detalle reparación técnico</Label>
+            <Textarea
+              id="detalleTecnico"
+              value={detalleTecnico}
+              onChange={(e) => setDetalleTecnico(e.target.value)}
+              rows={4}
+              placeholder="Observaciones técnicas: pruebas realizadas, componentes revisados, hallazgos…"
+            />
+            <p className="text-xs text-muted-foreground">
+              La IA combinará la descripción y este detalle al generar el diagnóstico.
+            </p>
+          </div>
+
+
+
           {photoUrl && (
             <div>
               <div className="font-medium mb-1.5 flex items-center gap-1.5">
