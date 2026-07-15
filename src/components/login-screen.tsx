@@ -42,13 +42,17 @@ export function LoginScreen() {
     setBusy(true);
     try {
       await register(ru, rn, rp);
-      toast.success(`Cuenta creada. Bienvenido, ${rn}`);
+      toast.success("Cuenta creada. Pendiente de aprobación por un administrador.");
+      setLu(ru);
+      setRu(""); setRn(""); setRp("");
+      setTab("login");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Error al registrar");
     } finally {
       setBusy(false);
     }
   };
+
 
   return (
     <div className="min-h-screen grid place-items-center p-4 bg-gradient-to-br from-background to-accent/30">

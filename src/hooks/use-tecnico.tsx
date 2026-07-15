@@ -14,9 +14,10 @@ type Ctx = {
   tecnico: Tecnico | null;
   loading: boolean;
   login: (username: string, password: string) => Promise<void>;
-  register: (username: string, nombre: string, password: string) => Promise<void>;
+  register: (username: string, nombre: string, password: string) => Promise<{ pending: true }>;
   logout: () => Promise<void>;
 };
+
 
 const TecnicoCtx = createContext<Ctx | null>(null);
 
@@ -40,9 +41,9 @@ export function TecnicoProvider({ children }: { children: ReactNode }) {
     setTecnico(t);
   };
   const register = async (username: string, nombre: string, password: string) => {
-    const t = await registerFn({ data: { username, nombre, password } });
-    setTecnico(t);
+    return await registerFn({ data: { username, nombre, password } });
   };
+
   const logout = async () => {
     await logoutFn();
     setTecnico(null);
