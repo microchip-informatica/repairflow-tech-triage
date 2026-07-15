@@ -360,6 +360,7 @@ function TicketDetail({
           estado,
           notas: notas || null,
           descripcion: descripcion.trim() || ticket.descripcion,
+          detalleTecnico: detalleTecnico.trim() || null,
           urgencia: (urgencia || null) as "Alta" | "Media" | "Baja" | null,
         },
       });
@@ -376,7 +377,10 @@ function TicketDetail({
     setGenerating(true);
     try {
       const currentDesc = descripcion.trim() || ticket.descripcion;
-      const updated = await regenFn({ data: { id: ticket.id, descripcion: currentDesc } });
+      const currentDetalle = detalleTecnico.trim() || null;
+      const updated = await regenFn({
+        data: { id: ticket.id, descripcion: currentDesc, detalleTecnico: currentDetalle },
+      });
       toast.success("Diagnóstico IA generado");
       onUpdated(updated);
     } catch (err) {
