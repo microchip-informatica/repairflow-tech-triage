@@ -40,6 +40,7 @@ export type TicketRow = {
   cliente: string;
   telefono: string | null;
   descripcion: string;
+  detalle_tecnico: string | null;
   foto_url: string | null;
   categoria: string | null;
   urgencia: string | null;
