@@ -52,6 +52,7 @@ export type Database = {
           coste_estimado: string | null
           created_at: string
           descripcion: string
+          detalle_tecnico: string | null
           estado: string
           foto_url: string | null
           id: string
@@ -70,6 +71,7 @@ export type Database = {
           coste_estimado?: string | null
           created_at?: string
           descripcion: string
+          detalle_tecnico?: string | null
           estado?: string
           foto_url?: string | null
           id?: string
@@ -88,6 +90,7 @@ export type Database = {
           coste_estimado?: string | null
           created_at?: string
           descripcion?: string
+          detalle_tecnico?: string | null
           estado?: string
           foto_url?: string | null
           id?: string

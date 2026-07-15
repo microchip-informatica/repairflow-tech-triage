@@ -49,6 +49,7 @@ function NewTicketPage() {
   const [cliente, setCliente] = useState("");
   const [telefono, setTelefono] = useState("");
   const [descripcion, setDescripcion] = useState("");
+  const [detalleTecnico, setDetalleTecnico] = useState("");
   const [foto, setFoto] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [loadingKind, setLoadingKind] = useState<"save" | "ai" | null>(null);
@@ -86,6 +87,7 @@ function NewTicketPage() {
           cliente: cliente.trim(),
           telefono: telefono.trim() || null,
           descripcion: descripcion.trim(),
+          detalleTecnico: detalleTecnico.trim() || null,
           fotoBase64,
           fotoExt,
           fotoMime,
@@ -110,6 +112,7 @@ function NewTicketPage() {
       setCliente("");
       setTelefono("");
       setDescripcion("");
+      setDetalleTecnico("");
       setFoto(null);
     } catch (err) {
       console.error(err);
@@ -212,6 +215,21 @@ function NewTicketPage() {
                     required
                   />
                 </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="detalleTecnico">Detalle reparación técnico</Label>
+                  <Textarea
+                    id="detalleTecnico"
+                    value={detalleTecnico}
+                    onChange={(e) => setDetalleTecnico(e.target.value)}
+                    placeholder="Observaciones técnicas: pruebas realizadas, componentes revisados, hallazgos…"
+                    rows={4}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    La IA usará la descripción del problema y este detalle para generar el diagnóstico.
+                  </p>
+                </div>
+
 
                 <div className="space-y-1.5">
                   <Label htmlFor="foto">Foto del dispositivo (opcional)</Label>

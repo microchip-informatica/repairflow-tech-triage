@@ -323,6 +323,7 @@ function TicketDetail({
   const [notas, setNotas] = useState("");
   const [estado, setEstado] = useState<"pendiente" | "en curso" | "terminado">("pendiente");
   const [descripcion, setDescripcion] = useState("");
+  const [detalleTecnico, setDetalleTecnico] = useState("");
   const [urgencia, setUrgencia] = useState<string>("");
   const [saving, setSaving] = useState(false);
   const [generating, setGenerating] = useState(false);
@@ -333,6 +334,7 @@ function TicketDetail({
     setNotas(ticket.notas ?? "");
     setEstado((ticket.estado as "pendiente" | "en curso" | "terminado") ?? "pendiente");
     setDescripcion(ticket.descripcion);
+    setDetalleTecnico(ticket.detalle_tecnico ?? "");
     setUrgencia(ticket.urgencia ?? "");
     setPhotoUrl(null);
     if (ticket.foto_url) {
@@ -358,6 +360,7 @@ function TicketDetail({
           estado,
           notas: notas || null,
           descripcion: descripcion.trim() || ticket.descripcion,
+          detalleTecnico: detalleTecnico.trim() || null,
           urgencia: (urgencia || null) as "Alta" | "Media" | "Baja" | null,
         },
       });
@@ -374,7 +377,10 @@ function TicketDetail({
     setGenerating(true);
     try {
       const currentDesc = descripcion.trim() || ticket.descripcion;
-      const updated = await regenFn({ data: { id: ticket.id, descripcion: currentDesc } });
+      const currentDetalle = detalleTecnico.trim() || null;
+      const updated = await regenFn({
+        data: { id: ticket.id, descripcion: currentDesc, detalleTecnico: currentDetalle },
+      });
       toast.success("Diagnóstico IA generado");
       onUpdated(updated);
     } catch (err) {
@@ -444,6 +450,22 @@ function TicketDetail({
               El técnico puede actualizar la descripción con datos nuevos.
             </p>
           </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="detalleTecnico">Detalle reparación técnico</Label>
+            <Textarea
+              id="detalleTecnico"
+              value={detalleTecnico}
+              onChange={(e) => setDetalleTecnico(e.target.value)}
+              rows={4}
+              placeholder="Observaciones técnicas: pruebas realizadas, componentes revisados, hallazgos…"
+            />
+            <p className="text-xs text-muted-foreground">
+              La IA combinará la descripción y este detalle al generar el diagnóstico.
+            </p>
+          </div>
+
+
 
           {photoUrl && (
             <div>

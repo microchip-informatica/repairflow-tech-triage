@@ -9,6 +9,7 @@ const CreateTicketInput = z.object({
   cliente: z.string().trim().min(1).max(120),
   telefono: z.string().trim().max(40).optional().nullable(),
   descripcion: z.string().trim().min(1).max(4000),
+  detalleTecnico: z.string().trim().max(4000).optional().nullable(),
   fotoBase64: z.string().max(15_000_000).optional().nullable(),
   fotoExt: z.string().max(8).optional().nullable(),
   fotoMime: z.string().max(80).optional().nullable(),
@@ -20,12 +21,14 @@ const UpdateTicketInput = z.object({
   estado: z.enum(["pendiente", "en curso", "terminado"]).optional(),
   notas: z.string().max(4000).nullable().optional(),
   descripcion: z.string().trim().min(1).max(4000).optional(),
+  detalleTecnico: z.string().trim().max(4000).nullable().optional(),
   urgencia: z.enum(["Alta", "Media", "Baja"]).nullable().optional(),
 });
 
 const RegenerateInput = z.object({
   id: z.string().uuid(),
   descripcion: z.string().trim().min(1).max(4000),
+  detalleTecnico: z.string().trim().max(4000).nullable().optional(),
 });
 
 const PhotoInput = z.object({ path: z.string().min(1).max(500) });
@@ -37,6 +40,7 @@ export type TicketRow = {
   cliente: string;
   telefono: string | null;
   descripcion: string;
+  detalle_tecnico: string | null;
   foto_url: string | null;
   categoria: string | null;
   urgencia: string | null;
@@ -107,7 +111,7 @@ export const createTicket = createServerFn({ method: "POST" })
     let diag = null as null | Awaited<ReturnType<typeof import("./ai.server").runAiDiagnostico>>;
     if (data.withAi) {
       const { runAiDiagnostico } = await import("./ai.server");
-      diag = await runAiDiagnostico(data.descripcion);
+      diag = await runAiDiagnostico(data.descripcion, data.detalleTecnico ?? null);
     }
 
     const { data: inserted, error } = await admin
@@ -116,6 +120,7 @@ export const createTicket = createServerFn({ method: "POST" })
         cliente: data.cliente,
         telefono: data.telefono || null,
         descripcion: data.descripcion,
+        detalle_tecnico: data.detalleTecnico || null,
         foto_url: fotoPath,
         categoria: diag?.categoria ?? null,
         urgencia: diag?.urgencia ?? null,
@@ -143,6 +148,7 @@ export const updateTicket = createServerFn({ method: "POST" })
       estado?: string;
       notas?: string | null;
       descripcion?: string;
+      detalle_tecnico?: string | null;
       urgencia?: string | null;
       tecnico_id: string;
       tecnico_nombre: string;
@@ -153,6 +159,7 @@ export const updateTicket = createServerFn({ method: "POST" })
     if (data.estado !== undefined) patch.estado = data.estado;
     if (data.notas !== undefined) patch.notas = data.notas || null;
     if (data.descripcion !== undefined) patch.descripcion = data.descripcion;
+    if (data.detalleTecnico !== undefined) patch.detalle_tecnico = data.detalleTecnico || null;
     if (data.urgencia !== undefined) patch.urgencia = data.urgencia;
 
 
@@ -173,7 +180,7 @@ export const regenerateDiagnostico = createServerFn({ method: "POST" })
     const { admin, tecnicoId, tecnicoNombre } = await requireTecnico();
     const { runAiDiagnostico } = await import("./ai.server");
 
-    const diag = await runAiDiagnostico(data.descripcion);
+    const diag = await runAiDiagnostico(data.descripcion, data.detalleTecnico ?? null);
     const { data: updated, error } = await admin
       .from("tickets")
       .update({
@@ -184,6 +191,7 @@ export const regenerateDiagnostico = createServerFn({ method: "POST" })
         recomendacion: diag.recomendacion,
         coste_estimado: diag.coste_estimado,
         descripcion: data.descripcion,
+        detalle_tecnico: data.detalleTecnico ?? null,
         tecnico_id: tecnicoId,
         tecnico_nombre: tecnicoNombre,
       })

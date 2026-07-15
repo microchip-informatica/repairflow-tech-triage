@@ -27,9 +27,16 @@ function parseDiagnostico(raw: string): Diagnostico {
   };
 }
 
-export async function runAiDiagnostico(descripcion: string): Promise<Diagnostico> {
+export async function runAiDiagnostico(
+  descripcion: string,
+  detalleTecnico?: string | null,
+): Promise<Diagnostico> {
   const key = process.env.LOVABLE_API_KEY;
   if (!key) throw new Error("Falta LOVABLE_API_KEY");
+
+  const userContent = detalleTecnico && detalleTecnico.trim()
+    ? `Descripción del problema (cliente):\n${descripcion}\n\nDetalle técnico (observaciones del técnico):\n${detalleTecnico}`
+    : descripcion;
 
   const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
     method: "POST",
@@ -41,7 +48,7 @@ export async function runAiDiagnostico(descripcion: string): Promise<Diagnostico
       model: "google/gemini-2.5-flash",
       messages: [
         { role: "system", content: SYSTEM_PROMPT },
-        { role: "user", content: descripcion },
+        { role: "user", content: userContent },
       ],
     }),
   });
