@@ -158,10 +158,19 @@ function AdminPage() {
                 Nuevo ticket
               </Link>
             </Button>
+            {tecnico?.is_admin && (
+              <Button asChild variant="ghost" size="sm">
+                <Link to="/admin/tecnicos">
+                  <Users className="w-4 h-4 mr-1.5" />
+                  Técnicos
+                </Link>
+              </Button>
+            )}
             <Button variant="ghost" size="sm" onClick={() => logout()}>
               <LogOut className="w-4 h-4 mr-1.5" />
               Salir
             </Button>
+
           </div>
 
         </div>
