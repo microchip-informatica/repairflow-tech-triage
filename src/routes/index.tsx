@@ -49,6 +49,7 @@ function NewTicketPage() {
   const [cliente, setCliente] = useState("");
   const [telefono, setTelefono] = useState("");
   const [descripcion, setDescripcion] = useState("");
+  const [detalleTecnico, setDetalleTecnico] = useState("");
   const [foto, setFoto] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [loadingKind, setLoadingKind] = useState<"save" | "ai" | null>(null);
