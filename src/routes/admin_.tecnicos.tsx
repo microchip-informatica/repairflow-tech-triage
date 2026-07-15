@@ -27,7 +27,7 @@ import {
   LogOut,
 } from "lucide-react";
 
-export const Route = createFileRoute("/admin/tecnicos")({
+export const Route = createFileRoute("/admin_/tecnicos")({
   component: AdminTecnicosPage,
 });
 
