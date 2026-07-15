@@ -164,7 +164,7 @@ function NewTicketPage() {
           </div>
           <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Nuevo ticket de reparación</h1>
           <p className="text-muted-foreground mt-2 max-w-xl mx-auto">
-            Cuéntanos qué le pasa a tu equipo y recibirás al instante un diagnóstico técnico y un coste estimado.
+            Gestión de reparaciones apoyadas por IA.
           </p>
         </div>
 
