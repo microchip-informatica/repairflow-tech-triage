@@ -148,6 +148,7 @@ export const updateTicket = createServerFn({ method: "POST" })
       estado?: string;
       notas?: string | null;
       descripcion?: string;
+      detalle_tecnico?: string | null;
       urgencia?: string | null;
       tecnico_id: string;
       tecnico_nombre: string;
@@ -158,6 +159,7 @@ export const updateTicket = createServerFn({ method: "POST" })
     if (data.estado !== undefined) patch.estado = data.estado;
     if (data.notas !== undefined) patch.notas = data.notas || null;
     if (data.descripcion !== undefined) patch.descripcion = data.descripcion;
+    if (data.detalleTecnico !== undefined) patch.detalle_tecnico = data.detalleTecnico || null;
     if (data.urgencia !== undefined) patch.urgencia = data.urgencia;
 
 
