@@ -9,6 +9,7 @@ const CreateTicketInput = z.object({
   cliente: z.string().trim().min(1).max(120),
   telefono: z.string().trim().max(40).optional().nullable(),
   descripcion: z.string().trim().min(1).max(4000),
+  detalleTecnico: z.string().trim().max(4000).optional().nullable(),
   fotoBase64: z.string().max(15_000_000).optional().nullable(),
   fotoExt: z.string().max(8).optional().nullable(),
   fotoMime: z.string().max(80).optional().nullable(),
@@ -20,12 +21,14 @@ const UpdateTicketInput = z.object({
   estado: z.enum(["pendiente", "en curso", "terminado"]).optional(),
   notas: z.string().max(4000).nullable().optional(),
   descripcion: z.string().trim().min(1).max(4000).optional(),
+  detalleTecnico: z.string().trim().max(4000).nullable().optional(),
   urgencia: z.enum(["Alta", "Media", "Baja"]).nullable().optional(),
 });
 
 const RegenerateInput = z.object({
   id: z.string().uuid(),
   descripcion: z.string().trim().min(1).max(4000),
+  detalleTecnico: z.string().trim().max(4000).nullable().optional(),
 });
 
 const PhotoInput = z.object({ path: z.string().min(1).max(500) });
