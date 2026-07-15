@@ -217,6 +217,21 @@ function NewTicketPage() {
                 </div>
 
                 <div className="space-y-1.5">
+                  <Label htmlFor="detalleTecnico">Detalle reparación técnico</Label>
+                  <Textarea
+                    id="detalleTecnico"
+                    value={detalleTecnico}
+                    onChange={(e) => setDetalleTecnico(e.target.value)}
+                    placeholder="Observaciones técnicas: pruebas realizadas, componentes revisados, hallazgos…"
+                    rows={4}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    La IA usará la descripción del problema y este detalle para generar el diagnóstico.
+                  </p>
+                </div>
+
+
+                <div className="space-y-1.5">
                   <Label htmlFor="foto">Foto del dispositivo (opcional)</Label>
                   <label
                     htmlFor="foto"
