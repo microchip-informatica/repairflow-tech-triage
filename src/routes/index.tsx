@@ -345,14 +345,8 @@ function NewTicketPage() {
                   </p>
                 </CardContent>
               </Card>
-            ) : (
-              <Card className="bg-accent/30 border-dashed">
-                <CardContent className="py-10 text-center text-sm text-muted-foreground">
-                  <Sparkles className="w-8 h-8 mx-auto mb-3 text-primary/60" />
-                  Envía el formulario para recibir un diagnóstico técnico automático.
-                </CardContent>
-              </Card>
-            )}
+            ) : null}
+
           </div>
         </div>
       </main>
