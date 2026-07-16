@@ -187,7 +187,21 @@ export const regenerateDiagnostico = createServerFn({ method: "POST" })
     const { admin, tecnicoId, tecnicoNombre } = await requireTecnico();
     const { runAiDiagnostico } = await import("./ai.server");
 
-    const diag = await runAiDiagnostico(data.descripcion, data.detalleTecnico ?? null);
+    // Fetch the ticket to obtain the photo path (if any) for multimodal input.
+    const { data: existing } = await admin
+      .from("tickets")
+      .select("foto_url")
+      .eq("id", data.id)
+      .maybeSingle();
+    let signedPhoto: string | null = null;
+    if (existing?.foto_url) {
+      const { data: signed } = await admin.storage
+        .from(BUCKET)
+        .createSignedUrl(existing.foto_url, 600);
+      signedPhoto = signed?.signedUrl ?? null;
+    }
+
+    const diag = await runAiDiagnostico(data.descripcion, data.detalleTecnico ?? null, signedPhoto);
     const { data: updated, error } = await admin
       .from("tickets")
       .update({
