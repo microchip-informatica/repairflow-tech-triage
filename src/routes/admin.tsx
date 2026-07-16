@@ -482,7 +482,7 @@ function TicketDetail({
             </div>
           )}
 
-          <div className="rounded-md border bg-accent/30 p-4">
+          <div className="rounded-md border bg-accent/30 p-4 space-y-4">
             <div className="flex items-center justify-between gap-3 flex-wrap">
               <div className="flex items-center gap-2 font-medium">
                 <Sparkles className="w-4 h-4 text-primary" />
@@ -501,45 +501,54 @@ function TicketDetail({
                 )}
               </Button>
             </div>
-            {!hasDiagnostico && (
-              <p className="text-xs text-muted-foreground mt-2">
-                Aún no se ha generado un análisis técnico automático para este ticket.
+
+            {!hasDiagnostico ? (
+              <p className="text-xs text-muted-foreground">
+                Aún no se ha generado un análisis técnico automático. La IA usará la descripción, el detalle técnico{photoUrl ? " y la foto adjunta" : ""} para generarlo.
               </p>
+            ) : (
+              <div className="space-y-4 rounded-md border bg-background p-4">
+                {ticket.titulo && (
+                  <div>
+                    <div className="text-xs uppercase tracking-wide text-muted-foreground mb-0.5">Título</div>
+                    <div className="font-semibold leading-snug">{ticket.titulo}</div>
+                  </div>
+                )}
+
+                {causas.length > 0 && (
+                  <div>
+                    <div className="font-medium mb-1 flex items-center gap-1.5">
+                      <AlertTriangle className="w-4 h-4 text-primary" /> Causas probables
+                    </div>
+                    <ul className="list-disc pl-5 space-y-0.5 text-muted-foreground">
+                      {causas.map((c, i) => (
+                        <li key={i}>{c}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {ticket.recomendacion && (
+                  <div>
+                    <div className="font-medium mb-1 flex items-center gap-1.5">
+                      <Lightbulb className="w-4 h-4 text-primary" /> Recomendación
+                    </div>
+                    <p className="text-muted-foreground">{ticket.recomendacion}</p>
+                  </div>
+                )}
+
+                {ticket.coste_estimado && (
+                  <div className="flex items-center justify-between border-t pt-3">
+                    <span className="flex items-center gap-1.5 font-medium">
+                      <Euro className="w-4 h-4 text-primary" /> Coste estimado
+                    </span>
+                    <span className="font-semibold">{ticket.coste_estimado}</span>
+                  </div>
+                )}
+              </div>
             )}
           </div>
 
-
-
-          {causas.length > 0 && (
-            <div>
-              <div className="font-medium mb-1 flex items-center gap-1.5">
-                <AlertTriangle className="w-4 h-4 text-primary" /> Causas probables
-              </div>
-              <ul className="list-disc pl-5 space-y-0.5 text-muted-foreground">
-                {causas.map((c, i) => (
-                  <li key={i}>{c}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {ticket.recomendacion && (
-            <div>
-              <div className="font-medium mb-1 flex items-center gap-1.5">
-                <Lightbulb className="w-4 h-4 text-primary" /> Recomendación
-              </div>
-              <p className="text-muted-foreground">{ticket.recomendacion}</p>
-            </div>
-          )}
-
-          {ticket.coste_estimado && (
-            <div className="flex items-center justify-between border-t border-b py-3">
-              <span className="flex items-center gap-1.5 font-medium">
-                <Euro className="w-4 h-4 text-primary" /> Coste estimado
-              </span>
-              <span className="font-semibold">{ticket.coste_estimado}</span>
-            </div>
-          )}
 
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="space-y-1.5">
