@@ -351,6 +351,8 @@ function NewTicketPage() {
             ) : null}
 
           </div>
+          )}
+
         </div>
       </main>
     </div>
