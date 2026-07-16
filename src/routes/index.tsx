@@ -171,8 +171,9 @@ function NewTicketPage() {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-5 gap-6">
-          <Card className="md:col-span-3">
+        <div className={`grid gap-6 ${result ? "md:grid-cols-5" : "justify-items-center"}`}>
+          <Card className={result ? "w-full md:col-span-3" : "w-full max-w-2xl"}>
+
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <ClipboardList className="w-5 h-5 text-primary" />
