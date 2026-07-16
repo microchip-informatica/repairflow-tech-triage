@@ -30,13 +30,19 @@ function parseDiagnostico(raw: string): Diagnostico {
 export async function runAiDiagnostico(
   descripcion: string,
   detalleTecnico?: string | null,
+  fotoUrl?: string | null,
 ): Promise<Diagnostico> {
   const key = process.env.LOVABLE_API_KEY;
   if (!key) throw new Error("Falta LOVABLE_API_KEY");
 
-  const userContent = detalleTecnico && detalleTecnico.trim()
+  const textContent = detalleTecnico && detalleTecnico.trim()
     ? `Descripción del problema (cliente):\n${descripcion}\n\nDetalle técnico (observaciones del técnico):\n${detalleTecnico}`
     : descripcion;
+
+  const userContent: Array<Record<string, unknown>> = [{ type: "text", text: textContent }];
+  if (fotoUrl) {
+    userContent.push({ type: "image_url", image_url: { url: fotoUrl } });
+  }
 
   const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
     method: "POST",
