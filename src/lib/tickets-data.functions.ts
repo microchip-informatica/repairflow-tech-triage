@@ -111,7 +111,14 @@ export const createTicket = createServerFn({ method: "POST" })
     let diag = null as null | Awaited<ReturnType<typeof import("./ai.server").runAiDiagnostico>>;
     if (data.withAi) {
       const { runAiDiagnostico } = await import("./ai.server");
-      diag = await runAiDiagnostico(data.descripcion, data.detalleTecnico ?? null);
+      let signedPhoto: string | null = null;
+      if (fotoPath) {
+        const { data: signed } = await admin.storage
+          .from(BUCKET)
+          .createSignedUrl(fotoPath, 600);
+        signedPhoto = signed?.signedUrl ?? null;
+      }
+      diag = await runAiDiagnostico(data.descripcion, data.detalleTecnico ?? null, signedPhoto);
     }
 
     const { data: inserted, error } = await admin
