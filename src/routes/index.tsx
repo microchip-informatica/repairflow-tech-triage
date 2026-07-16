@@ -296,7 +296,9 @@ function NewTicketPage() {
             </CardContent>
           </Card>
 
+          {result && (
           <div className="md:col-span-2">
+
             {result ? (
               <Card className="border-primary/30 shadow-lg shadow-primary/5">
                 <CardHeader className="pb-3">
