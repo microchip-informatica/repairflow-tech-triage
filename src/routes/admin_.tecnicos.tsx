@@ -7,12 +7,23 @@ import {
   revokeTecnico,
   setAdminTecnico,
   deleteTecnico,
+  resetTecnicoPassword,
   type TecnicoRow,
 } from "@/lib/auth.functions";
 import { useTecnico } from "@/hooks/use-tecnico";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { toast } from "sonner";
 import {
   Wrench,
@@ -25,6 +36,7 @@ import {
   Trash2,
   UserCircle2,
   LogOut,
+  KeyRound,
 } from "lucide-react";
 
 export const Route = createFileRoute("/admin_/tecnicos")({
