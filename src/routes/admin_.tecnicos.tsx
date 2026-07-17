@@ -202,6 +202,87 @@ function AdminTecnicosPage() {
           </>
         )}
       </main>
+
+      <Dialog
+        open={!!pwdTarget}
+        onOpenChange={(o) => {
+          if (!o) {
+            setPwdTarget(null);
+            setNewPwd("");
+            setConfirmPwd("");
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Cambiar contraseña</DialogTitle>
+            <DialogDescription>
+              {pwdTarget ? <>Nueva contraseña para <b>{pwdTarget.nombre}</b> (@{pwdTarget.username}).</> : null}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="new-pwd">Nueva contraseña</Label>
+              <Input
+                id="new-pwd"
+                type="password"
+                value={newPwd}
+                onChange={(e) => setNewPwd(e.target.value)}
+                autoComplete="new-password"
+                placeholder="Mínimo 6 caracteres"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="confirm-pwd">Confirmar contraseña</Label>
+              <Input
+                id="confirm-pwd"
+                type="password"
+                value={confirmPwd}
+                onChange={(e) => setConfirmPwd(e.target.value)}
+                autoComplete="new-password"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setPwdTarget(null)}
+              disabled={pwdSaving}
+            >
+              Cancelar
+            </Button>
+            <Button
+              disabled={pwdSaving}
+              onClick={async () => {
+                if (!pwdTarget) return;
+                if (newPwd.length < 6) {
+                  toast.error("La contraseña debe tener al menos 6 caracteres");
+                  return;
+                }
+                if (newPwd !== confirmPwd) {
+                  toast.error("Las contraseñas no coinciden");
+                  return;
+                }
+                setPwdSaving(true);
+                try {
+                  await resetPwdFn({ data: { id: pwdTarget.id, password: newPwd } });
+                  toast.success("Contraseña actualizada");
+                  setPwdTarget(null);
+                  setNewPwd("");
+                  setConfirmPwd("");
+                } catch (err) {
+                  toast.error(err instanceof Error ? err.message : "Error");
+                } finally {
+                  setPwdSaving(false);
+                }
+              }}
+            >
+              {pwdSaving && <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />}
+              Guardar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
