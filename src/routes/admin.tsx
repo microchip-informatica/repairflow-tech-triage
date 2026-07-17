@@ -367,7 +367,7 @@ function TicketDetail({
           urgencia: (urgencia || null) as "Alta" | "Media" | "Baja" | null,
         },
       });
-      toast.success("Ticket actualizado");
+      toast.success("OR actualizada");
       onUpdated(updated);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "No se pudo guardar");
