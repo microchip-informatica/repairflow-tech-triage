@@ -107,7 +107,7 @@ function AdminPage() {
       const data = await listFn();
       setTickets(data);
     } catch {
-      toast.error("Error cargando tickets");
+      toast.error("Error cargando órdenes de reparación");
     } finally {
       setLoading(false);
     }
