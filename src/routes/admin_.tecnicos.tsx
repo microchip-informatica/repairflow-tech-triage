@@ -51,10 +51,15 @@ function AdminTecnicosPage() {
   const revokeFn = useServerFn(revokeTecnico);
   const setAdminFn = useServerFn(setAdminTecnico);
   const deleteFn = useServerFn(deleteTecnico);
+  const resetPwdFn = useServerFn(resetTecnicoPassword);
 
   const [rows, setRows] = useState<TecnicoRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [pwdTarget, setPwdTarget] = useState<TecnicoRow | null>(null);
+  const [newPwd, setNewPwd] = useState("");
+  const [confirmPwd, setConfirmPwd] = useState("");
+  const [pwdSaving, setPwdSaving] = useState(false);
 
   const load = async () => {
     setLoading(true);
