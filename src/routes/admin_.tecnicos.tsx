@@ -212,6 +212,7 @@ function TecnicoRowCard({
   onRevoke,
   onToggleAdmin,
   onDelete,
+  onChangePassword,
 }: {
   row: TecnicoRow;
   busy: boolean;
@@ -220,6 +221,7 @@ function TecnicoRowCard({
   onRevoke?: () => void;
   onToggleAdmin?: () => void;
   onDelete: () => void;
+  onChangePassword: () => void;
 }) {
   const isMainAdmin = row.username === "admin";
   return (
@@ -257,6 +259,9 @@ function TecnicoRowCard({
               )}
             </Button>
           )}
+          <Button size="sm" variant="outline" onClick={onChangePassword} disabled={busy}>
+            <KeyRound className="w-4 h-4 mr-1.5" /> Contraseña
+          </Button>
           {!isMainAdmin && !isSelf && (
             <Button size="sm" variant="destructive" onClick={onDelete} disabled={busy}>
               <Trash2 className="w-4 h-4" />
