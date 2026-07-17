@@ -165,7 +165,7 @@ function NewTicketPage() {
             <Sparkles className="w-3.5 h-3.5" />
             Diagnóstico con IA
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Nuevo ticket de reparación</h1>
+          <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Nueva orden de reparación</h1>
           <p className="text-muted-foreground mt-2 max-w-xl mx-auto">
             Gestión de reparaciones apoyadas por IA.
           </p>
