@@ -344,7 +344,7 @@ function NewTicketPage() {
                     <span className="font-semibold">{result.diagnostico.coste_estimado}</span>
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Ticket #{result.ticketId.slice(0, 8)} guardado como <b>pendiente</b>.
+                    OR #{result.ticketId.slice(0, 8)} guardada como <b>pendiente</b>.
                   </p>
                 </CardContent>
               </Card>
