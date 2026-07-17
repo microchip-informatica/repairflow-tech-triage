@@ -698,7 +698,7 @@ function PrintDialog({
     const parts: string[] = [];
 
     parts.push(
-      `<header><h1>Ticket #${escapeHtml(ticket.id.slice(0, 8))}</h1><div class="meta">${escapeHtml(formatDate(ticket.created_at))}${ticket.urgencia ? ` · Urgencia ${escapeHtml(ticket.urgencia)}` : ""}${ticket.categoria ? ` · ${escapeHtml(ticket.categoria)}` : ""}${ticket.estado ? ` · ${escapeHtml(ticket.estado)}` : ""}</div></header>`,
+      `<header><h1>OR #${escapeHtml(ticket.id.slice(0, 8))}</h1><div class="meta">${escapeHtml(formatDate(ticket.created_at))}${ticket.urgencia ? ` · Urgencia ${escapeHtml(ticket.urgencia)}` : ""}${ticket.categoria ? ` · ${escapeHtml(ticket.categoria)}` : ""}${ticket.estado ? ` · ${escapeHtml(ticket.estado)}` : ""}</div></header>`,
     );
 
     if (includes("cliente")) {
