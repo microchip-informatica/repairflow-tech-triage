@@ -107,7 +107,7 @@ function NewTicketPage() {
         : null;
 
       setResult(diag ? { diagnostico: diag, ticketId: ticket.id } : null);
-      toast.success(diag ? "Ticket creado y diagnóstico generado." : "Ticket guardado.");
+      toast.success(diag ? "OR creada y diagnóstico generado." : "Orden de reparación guardada.");
 
       setCliente("");
       setTelefono("");
@@ -116,7 +116,7 @@ function NewTicketPage() {
       setFoto(null);
     } catch (err) {
       console.error(err);
-      toast.error(err instanceof Error ? err.message : "Error al procesar el ticket.");
+      toast.error(err instanceof Error ? err.message : "Error al procesar la orden de reparación.");
     } finally {
       setLoading(false);
       setLoadingKind(null);
@@ -165,7 +165,7 @@ function NewTicketPage() {
             <Sparkles className="w-3.5 h-3.5" />
             Diagnóstico con IA
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Nuevo ticket de reparación</h1>
+          <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Nueva orden de reparación</h1>
           <p className="text-muted-foreground mt-2 max-w-xl mx-auto">
             Gestión de reparaciones apoyadas por IA.
           </p>
@@ -177,7 +177,7 @@ function NewTicketPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <ClipboardList className="w-5 h-5 text-primary" />
-                Datos del ticket
+                Datos de la OR
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -268,7 +268,7 @@ function NewTicketPage() {
                     ) : (
                       <>
                         <ClipboardList className="w-4 h-4 mr-2" />
-                        Guardar ticket
+                        Guardar OR
                       </>
                     )}
                   </Button>
@@ -344,7 +344,7 @@ function NewTicketPage() {
                     <span className="font-semibold">{result.diagnostico.coste_estimado}</span>
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Ticket #{result.ticketId.slice(0, 8)} guardado como <b>pendiente</b>.
+                    OR #{result.ticketId.slice(0, 8)} guardada como <b>pendiente</b>.
                   </p>
                 </CardContent>
               </Card>

@@ -107,7 +107,7 @@ function AdminPage() {
       const data = await listFn();
       setTickets(data);
     } catch {
-      toast.error("Error cargando tickets");
+      toast.error("Error cargando órdenes de reparación");
     } finally {
       setLoading(false);
     }
@@ -157,7 +157,7 @@ function AdminPage() {
             <Button asChild variant="ghost" size="sm">
               <Link to="/">
                 <ArrowLeft className="w-4 h-4 mr-1.5" />
-                Nuevo ticket
+                Nueva OR
               </Link>
             </Button>
             {tecnico?.is_admin && (
@@ -181,7 +181,7 @@ function AdminPage() {
       <main className="max-w-6xl mx-auto px-4 py-6 md:py-8">
         <div className="flex items-baseline justify-between mb-5">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Tickets</h1>
+            <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Órdenes de reparación</h1>
             <p className="text-sm text-muted-foreground">
               {loading ? "Cargando…" : `${filtered.length} de ${tickets.length}`}
             </p>
@@ -247,7 +247,7 @@ function AdminPage() {
         ) : filtered.length === 0 ? (
           <Card>
             <CardContent className="py-16 text-center text-muted-foreground">
-              No hay tickets que coincidan.
+              No hay órdenes de reparación que coincidan.
             </CardContent>
           </Card>
         ) : (
@@ -367,7 +367,7 @@ function TicketDetail({
           urgencia: (urgencia || null) as "Alta" | "Media" | "Baja" | null,
         },
       });
-      toast.success("Ticket actualizado");
+      toast.success("OR actualizada");
       onUpdated(updated);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "No se pudo guardar");
@@ -411,7 +411,7 @@ function TicketDetail({
             )}
           </div>
           <DialogTitle className="text-xl leading-snug">
-            {ticket.titulo ?? "Ticket"}
+            {ticket.titulo ?? "Orden de reparación"}
           </DialogTitle>
           <DialogDescription>
             {ticket.cliente}
@@ -698,7 +698,7 @@ function PrintDialog({
     const parts: string[] = [];
 
     parts.push(
-      `<header><h1>Ticket #${escapeHtml(ticket.id.slice(0, 8))}</h1><div class="meta">${escapeHtml(formatDate(ticket.created_at))}${ticket.urgencia ? ` · Urgencia ${escapeHtml(ticket.urgencia)}` : ""}${ticket.categoria ? ` · ${escapeHtml(ticket.categoria)}` : ""}${ticket.estado ? ` · ${escapeHtml(ticket.estado)}` : ""}</div></header>`,
+      `<header><h1>OR #${escapeHtml(ticket.id.slice(0, 8))}</h1><div class="meta">${escapeHtml(formatDate(ticket.created_at))}${ticket.urgencia ? ` · Urgencia ${escapeHtml(ticket.urgencia)}` : ""}${ticket.categoria ? ` · ${escapeHtml(ticket.categoria)}` : ""}${ticket.estado ? ` · ${escapeHtml(ticket.estado)}` : ""}</div></header>`,
     );
 
     if (includes("cliente")) {
@@ -737,7 +737,7 @@ function PrintDialog({
       );
     }
 
-    const html = `<!doctype html><html><head><meta charset="utf-8"/><title>Ticket ${escapeHtml(ticket.cliente)}</title><style>
+    const html = `<!doctype html><html><head><meta charset="utf-8"/><title>OR ${escapeHtml(ticket.cliente)}</title><style>
       *{box-sizing:border-box}
       body{font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:#0f172a;padding:24px;max-width:720px;margin:0 auto;font-size:12pt;line-height:1.4}
       header{border-bottom:2px solid #1e3a8a;padding-bottom:8px;margin-bottom:14px}
@@ -770,7 +770,7 @@ function PrintDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Imprimir ticket</DialogTitle>
+          <DialogTitle>Imprimir orden de reparación</DialogTitle>
           <DialogDescription>
             Elige un preajuste o selecciona los apartados que quieras imprimir.
           </DialogDescription>
