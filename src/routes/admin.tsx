@@ -31,6 +31,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import {
   Wrench,
@@ -48,6 +49,7 @@ import {
   UserCircle2,
   LogOut,
   Users,
+  Printer,
 } from "lucide-react";
 
 
@@ -328,6 +330,7 @@ function TicketDetail({
   const [saving, setSaving] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [printOpen, setPrintOpen] = useState(false);
 
   useEffect(() => {
     if (!ticket) return;
@@ -591,13 +594,236 @@ function TicketDetail({
             />
           </div>
 
-          <div className="flex justify-end gap-2 pt-2">
+          <div className="flex justify-end gap-2 pt-2 flex-wrap">
             <Button variant="outline" onClick={onClose}>
               Cerrar
+            </Button>
+            <Button variant="outline" onClick={() => setPrintOpen(true)}>
+              <Printer className="w-4 h-4 mr-2" />
+              Imprimir
             </Button>
             <Button onClick={save} disabled={saving}>
               {saving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
               Guardar cambios
+            </Button>
+          </div>
+        </div>
+        <PrintDialog
+          open={printOpen}
+          onOpenChange={setPrintOpen}
+          ticket={ticket}
+          descripcion={descripcion}
+          detalleTecnico={detalleTecnico}
+          notas={notas}
+          causas={causas}
+        />
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+type PrintSection =
+  | "cliente"
+  | "descripcion"
+  | "detalleTecnico"
+  | "diagnostico"
+  | "notas";
+
+const PRESETS: { id: string; label: string; sections: PrintSection[] }[] = [
+  { id: "p1", label: "Cliente + Descripción", sections: ["cliente", "descripcion"] },
+  {
+    id: "p2",
+    label: "Cliente + Descripción + Detalle técnico",
+    sections: ["cliente", "descripcion", "detalleTecnico"],
+  },
+  {
+    id: "p3",
+    label: "Cliente + Descripción + Detalle + Diagnóstico IA",
+    sections: ["cliente", "descripcion", "detalleTecnico", "diagnostico"],
+  },
+];
+
+const SECTION_LABELS: Record<PrintSection, string> = {
+  cliente: "Datos del cliente",
+  descripcion: "Descripción del problema",
+  detalleTecnico: "Detalle reparación técnico",
+  diagnostico: "Diagnóstico IA",
+  notas: "Notas internas",
+};
+
+function escapeHtml(s: string) {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function PrintDialog({
+  open,
+  onOpenChange,
+  ticket,
+  descripcion,
+  detalleTecnico,
+  notas,
+  causas,
+}: {
+  open: boolean;
+  onOpenChange: (o: boolean) => void;
+  ticket: Ticket;
+  descripcion: string;
+  detalleTecnico: string;
+  notas: string;
+  causas: string[];
+}) {
+  const [selected, setSelected] = useState<PrintSection[]>([
+    "cliente",
+    "descripcion",
+    "detalleTecnico",
+    "diagnostico",
+  ]);
+
+  const toggle = (s: PrintSection) =>
+    setSelected((prev) =>
+      prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s],
+    );
+
+  const applyPreset = (sections: PrintSection[]) => setSelected(sections);
+
+  const doPrint = () => {
+    const includes = (s: PrintSection) => selected.includes(s);
+    const hasDiag = Boolean(
+      ticket.titulo || ticket.recomendacion || causas.length > 0 || ticket.coste_estimado,
+    );
+    const parts: string[] = [];
+
+    parts.push(
+      `<header><h1>Ticket #${escapeHtml(ticket.id.slice(0, 8))}</h1><div class="meta">${escapeHtml(formatDate(ticket.created_at))}${ticket.urgencia ? ` · Urgencia ${escapeHtml(ticket.urgencia)}` : ""}${ticket.categoria ? ` · ${escapeHtml(ticket.categoria)}` : ""}${ticket.estado ? ` · ${escapeHtml(ticket.estado)}` : ""}</div></header>`,
+    );
+
+    if (includes("cliente")) {
+      parts.push(
+        `<section><h2>Cliente</h2><p><strong>${escapeHtml(ticket.cliente)}</strong>${ticket.telefono ? ` · ${escapeHtml(ticket.telefono)}` : ""}</p></section>`,
+      );
+    }
+    if (includes("descripcion")) {
+      parts.push(
+        `<section><h2>Descripción del problema</h2><p>${escapeHtml(descripcion || ticket.descripcion).replace(/\n/g, "<br/>")}</p></section>`,
+      );
+    }
+    if (includes("detalleTecnico") && (detalleTecnico || ticket.detalle_tecnico)) {
+      parts.push(
+        `<section><h2>Detalle reparación técnico</h2><p>${escapeHtml(detalleTecnico || ticket.detalle_tecnico || "").replace(/\n/g, "<br/>")}</p></section>`,
+      );
+    }
+    if (includes("diagnostico") && hasDiag) {
+      const causasHtml = causas.length
+        ? `<h3>Causas probables</h3><ul>${causas.map((c) => `<li>${escapeHtml(c)}</li>`).join("")}</ul>`
+        : "";
+      const recomHtml = ticket.recomendacion
+        ? `<h3>Recomendación</h3><p>${escapeHtml(ticket.recomendacion).replace(/\n/g, "<br/>")}</p>`
+        : "";
+      const costeHtml = ticket.coste_estimado
+        ? `<p><strong>Coste estimado:</strong> ${escapeHtml(ticket.coste_estimado)}</p>`
+        : "";
+      const titHtml = ticket.titulo ? `<p><strong>${escapeHtml(ticket.titulo)}</strong></p>` : "";
+      parts.push(
+        `<section><h2>Diagnóstico IA</h2>${titHtml}${causasHtml}${recomHtml}${costeHtml}</section>`,
+      );
+    }
+    if (includes("notas") && notas) {
+      parts.push(
+        `<section><h2>Notas internas</h2><p>${escapeHtml(notas).replace(/\n/g, "<br/>")}</p></section>`,
+      );
+    }
+
+    const html = `<!doctype html><html><head><meta charset="utf-8"/><title>Ticket ${escapeHtml(ticket.cliente)}</title><style>
+      *{box-sizing:border-box}
+      body{font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:#0f172a;padding:24px;max-width:720px;margin:0 auto;font-size:12pt;line-height:1.4}
+      header{border-bottom:2px solid #1e3a8a;padding-bottom:8px;margin-bottom:14px}
+      h1{margin:0;font-size:18pt;color:#1e3a8a}
+      h2{font-size:12pt;color:#1e3a8a;margin:12px 0 4px;border-bottom:1px solid #e2e8f0;padding-bottom:2px}
+      h3{font-size:11pt;margin:8px 0 2px}
+      p{margin:2px 0}
+      ul{margin:2px 0 2px 18px;padding:0}
+      .meta{font-size:10pt;color:#475569}
+      section{page-break-inside:avoid;margin-bottom:8px}
+      @page{margin:14mm}
+    </style></head><body>${parts.join("")}</body></html>`;
+
+    const w = window.open("", "_blank", "width=800,height=900");
+    if (!w) {
+      toast.error("Bloqueado por el navegador. Permite ventanas emergentes.");
+      return;
+    }
+    w.document.open();
+    w.document.write(html);
+    w.document.close();
+    w.focus();
+    setTimeout(() => {
+      w.print();
+    }, 300);
+    onOpenChange(false);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Imprimir ticket</DialogTitle>
+          <DialogDescription>
+            Elige un preajuste o selecciona los apartados que quieras imprimir.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-4 text-sm">
+          <div className="space-y-1.5">
+            <Label className="text-xs uppercase tracking-wide text-muted-foreground">
+              Preajustes
+            </Label>
+            <div className="grid gap-1.5">
+              {PRESETS.map((p) => (
+                <Button
+                  key={p.id}
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="justify-start font-normal"
+                  onClick={() => applyPreset(p.sections)}
+                >
+                  {p.label}
+                </Button>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-xs uppercase tracking-wide text-muted-foreground">
+              Apartados
+            </Label>
+            <div className="grid gap-2">
+              {(Object.keys(SECTION_LABELS) as PrintSection[]).map((s) => (
+                <label
+                  key={s}
+                  className="flex items-center gap-2 cursor-pointer select-none"
+                >
+                  <Checkbox
+                    checked={selected.includes(s)}
+                    onCheckedChange={() => toggle(s)}
+                  />
+                  <span>{SECTION_LABELS[s]}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-2 pt-2">
+            <Button variant="outline" onClick={() => onOpenChange(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={doPrint} disabled={selected.length === 0}>
+              <Printer className="w-4 h-4 mr-2" />
+              Imprimir
             </Button>
           </div>
         </div>
