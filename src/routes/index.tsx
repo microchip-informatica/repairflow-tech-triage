@@ -107,7 +107,7 @@ function NewTicketPage() {
         : null;
 
       setResult(diag ? { diagnostico: diag, ticketId: ticket.id } : null);
-      toast.success(diag ? "Ticket creado y diagnóstico generado." : "Ticket guardado.");
+      toast.success(diag ? "OR creada y diagnóstico generado." : "Orden de reparación guardada.");
 
       setCliente("");
       setTelefono("");
