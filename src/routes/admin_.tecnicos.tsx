@@ -194,6 +194,7 @@ function AdminTecnicosPage() {
                       )
                     }
                     onDelete={() => run(r.id, () => deleteFn({ data: { id: r.id } }), "Eliminado")}
+                    onChangePassword={() => setPwdTarget(r)}
                   />
                 ))}
               </div>
