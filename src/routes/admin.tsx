@@ -181,7 +181,7 @@ function AdminPage() {
       <main className="max-w-6xl mx-auto px-4 py-6 md:py-8">
         <div className="flex items-baseline justify-between mb-5">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Tickets</h1>
+            <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Órdenes de reparación</h1>
             <p className="text-sm text-muted-foreground">
               {loading ? "Cargando…" : `${filtered.length} de ${tickets.length}`}
             </p>
