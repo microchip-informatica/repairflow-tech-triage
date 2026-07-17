@@ -411,7 +411,7 @@ function TicketDetail({
             )}
           </div>
           <DialogTitle className="text-xl leading-snug">
-            {ticket.titulo ?? "Ticket"}
+            {ticket.titulo ?? "Orden de reparación"}
           </DialogTitle>
           <DialogDescription>
             {ticket.cliente}
