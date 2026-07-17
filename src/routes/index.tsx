@@ -116,7 +116,7 @@ function NewTicketPage() {
       setFoto(null);
     } catch (err) {
       console.error(err);
-      toast.error(err instanceof Error ? err.message : "Error al procesar el ticket.");
+      toast.error(err instanceof Error ? err.message : "Error al procesar la orden de reparación.");
     } finally {
       setLoading(false);
       setLoadingKind(null);
