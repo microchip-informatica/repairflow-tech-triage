@@ -177,7 +177,7 @@ function NewTicketPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <ClipboardList className="w-5 h-5 text-primary" />
-                Datos del ticket
+                Datos de la OR
               </CardTitle>
             </CardHeader>
             <CardContent>
