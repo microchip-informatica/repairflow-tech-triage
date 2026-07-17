@@ -157,7 +157,7 @@ function AdminPage() {
             <Button asChild variant="ghost" size="sm">
               <Link to="/">
                 <ArrowLeft className="w-4 h-4 mr-1.5" />
-                Nuevo ticket
+                Nueva OR
               </Link>
             </Button>
             {tecnico?.is_admin && (
