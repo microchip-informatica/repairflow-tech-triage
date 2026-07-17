@@ -191,3 +191,18 @@ export const deleteTecnico = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
+export const resetTecnicoPassword = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) =>
+    z.object({ id: z.string().uuid(), password: z.string().min(6).max(200) }).parse(d),
+  )
+  .handler(async ({ data }) => {
+    const admin = await requireAdmin();
+    const password_hash = await bcrypt.hash(data.password, 10);
+    const { error } = await admin
+      .from("tecnicos")
+      .update({ password_hash })
+      .eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });

@@ -7,12 +7,23 @@ import {
   revokeTecnico,
   setAdminTecnico,
   deleteTecnico,
+  resetTecnicoPassword,
   type TecnicoRow,
 } from "@/lib/auth.functions";
 import { useTecnico } from "@/hooks/use-tecnico";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { toast } from "sonner";
 import {
   Wrench,
@@ -25,6 +36,7 @@ import {
   Trash2,
   UserCircle2,
   LogOut,
+  KeyRound,
 } from "lucide-react";
 
 export const Route = createFileRoute("/admin_/tecnicos")({
@@ -39,10 +51,15 @@ function AdminTecnicosPage() {
   const revokeFn = useServerFn(revokeTecnico);
   const setAdminFn = useServerFn(setAdminTecnico);
   const deleteFn = useServerFn(deleteTecnico);
+  const resetPwdFn = useServerFn(resetTecnicoPassword);
 
   const [rows, setRows] = useState<TecnicoRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [pwdTarget, setPwdTarget] = useState<TecnicoRow | null>(null);
+  const [newPwd, setNewPwd] = useState("");
+  const [confirmPwd, setConfirmPwd] = useState("");
+  const [pwdSaving, setPwdSaving] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -149,6 +166,7 @@ function AdminTecnicosPage() {
                       busy={busyId === r.id}
                       onApprove={() => run(r.id, () => approveFn({ data: { id: r.id } }), "Aprobado")}
                       onDelete={() => run(r.id, () => deleteFn({ data: { id: r.id } }), "Eliminado")}
+                      onChangePassword={() => setPwdTarget(r)}
                     />
                   ))}
                 </div>
@@ -176,6 +194,7 @@ function AdminTecnicosPage() {
                       )
                     }
                     onDelete={() => run(r.id, () => deleteFn({ data: { id: r.id } }), "Eliminado")}
+                    onChangePassword={() => setPwdTarget(r)}
                   />
                 ))}
               </div>
@@ -183,6 +202,87 @@ function AdminTecnicosPage() {
           </>
         )}
       </main>
+
+      <Dialog
+        open={!!pwdTarget}
+        onOpenChange={(o) => {
+          if (!o) {
+            setPwdTarget(null);
+            setNewPwd("");
+            setConfirmPwd("");
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Cambiar contraseña</DialogTitle>
+            <DialogDescription>
+              {pwdTarget ? <>Nueva contraseña para <b>{pwdTarget.nombre}</b> (@{pwdTarget.username}).</> : null}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="new-pwd">Nueva contraseña</Label>
+              <Input
+                id="new-pwd"
+                type="password"
+                value={newPwd}
+                onChange={(e) => setNewPwd(e.target.value)}
+                autoComplete="new-password"
+                placeholder="Mínimo 6 caracteres"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="confirm-pwd">Confirmar contraseña</Label>
+              <Input
+                id="confirm-pwd"
+                type="password"
+                value={confirmPwd}
+                onChange={(e) => setConfirmPwd(e.target.value)}
+                autoComplete="new-password"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setPwdTarget(null)}
+              disabled={pwdSaving}
+            >
+              Cancelar
+            </Button>
+            <Button
+              disabled={pwdSaving}
+              onClick={async () => {
+                if (!pwdTarget) return;
+                if (newPwd.length < 6) {
+                  toast.error("La contraseña debe tener al menos 6 caracteres");
+                  return;
+                }
+                if (newPwd !== confirmPwd) {
+                  toast.error("Las contraseñas no coinciden");
+                  return;
+                }
+                setPwdSaving(true);
+                try {
+                  await resetPwdFn({ data: { id: pwdTarget.id, password: newPwd } });
+                  toast.success("Contraseña actualizada");
+                  setPwdTarget(null);
+                  setNewPwd("");
+                  setConfirmPwd("");
+                } catch (err) {
+                  toast.error(err instanceof Error ? err.message : "Error");
+                } finally {
+                  setPwdSaving(false);
+                }
+              }}
+            >
+              {pwdSaving && <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />}
+              Guardar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -195,6 +295,7 @@ function TecnicoRowCard({
   onRevoke,
   onToggleAdmin,
   onDelete,
+  onChangePassword,
 }: {
   row: TecnicoRow;
   busy: boolean;
@@ -203,6 +304,7 @@ function TecnicoRowCard({
   onRevoke?: () => void;
   onToggleAdmin?: () => void;
   onDelete: () => void;
+  onChangePassword: () => void;
 }) {
   const isMainAdmin = row.username === "admin";
   return (
@@ -240,6 +342,9 @@ function TecnicoRowCard({
               )}
             </Button>
           )}
+          <Button size="sm" variant="outline" onClick={onChangePassword} disabled={busy}>
+            <KeyRound className="w-4 h-4 mr-1.5" /> Contraseña
+          </Button>
           {!isMainAdmin && !isSelf && (
             <Button size="sm" variant="destructive" onClick={onDelete} disabled={busy}>
               <Trash2 className="w-4 h-4" />
