@@ -737,7 +737,7 @@ function PrintDialog({
       );
     }
 
-    const html = `<!doctype html><html><head><meta charset="utf-8"/><title>Ticket ${escapeHtml(ticket.cliente)}</title><style>
+    const html = `<!doctype html><html><head><meta charset="utf-8"/><title>OR ${escapeHtml(ticket.cliente)}</title><style>
       *{box-sizing:border-box}
       body{font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:#0f172a;padding:24px;max-width:720px;margin:0 auto;font-size:12pt;line-height:1.4}
       header{border-bottom:2px solid #1e3a8a;padding-bottom:8px;margin-bottom:14px}
