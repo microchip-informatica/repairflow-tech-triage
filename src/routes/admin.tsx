@@ -770,7 +770,7 @@ function PrintDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Imprimir ticket</DialogTitle>
+          <DialogTitle>Imprimir orden de reparación</DialogTitle>
           <DialogDescription>
             Elige un preajuste o selecciona los apartados que quieras imprimir.
           </DialogDescription>
