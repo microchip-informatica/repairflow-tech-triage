@@ -49,6 +49,7 @@ import {
   UserCircle2,
   LogOut,
   Users,
+  Printer,
 } from "lucide-react";
 
 
