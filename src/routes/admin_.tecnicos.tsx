@@ -166,6 +166,7 @@ function AdminTecnicosPage() {
                       busy={busyId === r.id}
                       onApprove={() => run(r.id, () => approveFn({ data: { id: r.id } }), "Aprobado")}
                       onDelete={() => run(r.id, () => deleteFn({ data: { id: r.id } }), "Eliminado")}
+                      onChangePassword={() => setPwdTarget(r)}
                     />
                   ))}
                 </div>
