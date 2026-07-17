@@ -330,6 +330,7 @@ function TicketDetail({
   const [saving, setSaving] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [printOpen, setPrintOpen] = useState(false);
 
   useEffect(() => {
     if (!ticket) return;
