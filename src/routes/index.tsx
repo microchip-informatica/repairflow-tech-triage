@@ -180,6 +180,22 @@ function NewTicketPage() {
           </p>
         </div>
 
+        {savedTicketId && (
+          <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 rounded-lg border border-primary/30 bg-primary/5 px-4 py-3">
+            <div className="flex items-center gap-2 text-sm">
+              <CheckCircle2 className="w-5 h-5 text-primary shrink-0" />
+              <span>
+                OR <b>#{savedTicketId.slice(0, 8)}</b> guardada correctamente.
+                Los datos siguen visibles como confirmación.
+              </span>
+            </div>
+            <Button size="sm" variant="outline" onClick={resetForm}>
+              <ClipboardList className="w-4 h-4 mr-1.5" />
+              Nueva OR
+            </Button>
+          </div>
+        )}
+
         <div className={`grid gap-6 ${result ? "md:grid-cols-5" : "justify-items-center"}`}>
           <Card className={result ? "w-full md:col-span-3" : "w-full max-w-2xl"}>
 
