@@ -54,6 +54,17 @@ function NewTicketPage() {
   const [loading, setLoading] = useState(false);
   const [loadingKind, setLoadingKind] = useState<"save" | "ai" | null>(null);
   const [result, setResult] = useState<Result | null>(null);
+  const [savedTicketId, setSavedTicketId] = useState<string | null>(null);
+
+  const resetForm = () => {
+    setCliente("");
+    setTelefono("");
+    setDescripcion("");
+    setDetalleTecnico("");
+    setFoto(null);
+    setResult(null);
+    setSavedTicketId(null);
+  };
 
   const readFileAsBase64 = (file: File) =>
     new Promise<string>((resolve, reject) => {
