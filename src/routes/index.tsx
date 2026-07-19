@@ -54,6 +54,17 @@ function NewTicketPage() {
   const [loading, setLoading] = useState(false);
   const [loadingKind, setLoadingKind] = useState<"save" | "ai" | null>(null);
   const [result, setResult] = useState<Result | null>(null);
+  const [savedTicketId, setSavedTicketId] = useState<string | null>(null);
+
+  const resetForm = () => {
+    setCliente("");
+    setTelefono("");
+    setDescripcion("");
+    setDetalleTecnico("");
+    setFoto(null);
+    setResult(null);
+    setSavedTicketId(null);
+  };
 
   const readFileAsBase64 = (file: File) =>
     new Promise<string>((resolve, reject) => {
@@ -107,13 +118,11 @@ function NewTicketPage() {
         : null;
 
       setResult(diag ? { diagnostico: diag, ticketId: ticket.id } : null);
+      setSavedTicketId(ticket.id);
       toast.success(diag ? "OR creada y diagnóstico generado." : "Orden de reparación guardada.");
 
-      setCliente("");
-      setTelefono("");
-      setDescripcion("");
-      setDetalleTecnico("");
-      setFoto(null);
+      // No limpiamos el formulario aquí para que el técnico vea claramente
+      // que la OR se ha guardado con sus datos. Puede pulsar "Nueva OR" para reiniciar.
     } catch (err) {
       console.error(err);
       toast.error(err instanceof Error ? err.message : "Error al procesar la orden de reparación.");
@@ -170,6 +179,22 @@ function NewTicketPage() {
             Gestión de reparaciones apoyadas por IA.
           </p>
         </div>
+
+        {savedTicketId && (
+          <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 rounded-lg border border-primary/30 bg-primary/5 px-4 py-3">
+            <div className="flex items-center gap-2 text-sm">
+              <CheckCircle2 className="w-5 h-5 text-primary shrink-0" />
+              <span>
+                OR <b>#{savedTicketId.slice(0, 8)}</b> guardada correctamente.
+                Los datos siguen visibles como confirmación.
+              </span>
+            </div>
+            <Button size="sm" variant="outline" onClick={resetForm}>
+              <ClipboardList className="w-4 h-4 mr-1.5" />
+              Nueva OR
+            </Button>
+          </div>
+        )}
 
         <div className={`grid gap-6 ${result ? "md:grid-cols-5" : "justify-items-center"}`}>
           <Card className={result ? "w-full md:col-span-3" : "w-full max-w-2xl"}>
