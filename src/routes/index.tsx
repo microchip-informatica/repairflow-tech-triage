@@ -109,11 +109,8 @@ function NewTicketPage() {
       setResult(diag ? { diagnostico: diag, ticketId: ticket.id } : null);
       toast.success(diag ? "OR creada y diagnóstico generado." : "Orden de reparación guardada.");
 
-      setCliente("");
-      setTelefono("");
-      setDescripcion("");
-      setDetalleTecnico("");
-      setFoto(null);
+      // No limpiamos el formulario aquí para que el técnico vea claramente
+      // que la OR se ha guardado con sus datos. Puede pulsar "Nueva OR" para reiniciar.
     } catch (err) {
       console.error(err);
       toast.error(err instanceof Error ? err.message : "Error al procesar la orden de reparación.");
