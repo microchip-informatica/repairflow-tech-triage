@@ -118,6 +118,7 @@ function NewTicketPage() {
         : null;
 
       setResult(diag ? { diagnostico: diag, ticketId: ticket.id } : null);
+      setSavedTicketId(ticket.id);
       toast.success(diag ? "OR creada y diagnóstico generado." : "Orden de reparación guardada.");
 
       // No limpiamos el formulario aquí para que el técnico vea claramente
